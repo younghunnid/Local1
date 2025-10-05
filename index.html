@@ -1,0 +1,2500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ServiceHub - Find Local Services</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        .service-card {
+            transition: all 0.3s ease;
+        }
+        .service-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .provider-card {
+            transition: all 0.2s ease;
+        }
+        .provider-card:hover {
+            transform: scale(1.02);
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .pulse-ring {
+            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.33); }
+            80%, 100% { opacity: 0; }
+        }
+        .offline-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #f59e0b;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            z-index: 1000;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+        .offline-indicator.show {
+            transform: translateY(0);
+        }
+        .reward-badge {
+            background: linear-gradient(45deg, #f59e0b, #d97706);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 10px #f59e0b; }
+            to { box-shadow: 0 0 20px #f59e0b, 0 0 30px #f59e0b; }
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .chat-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .chat-bubble.sent {
+            background: #3b82f6;
+            color: white;
+            margin-left: auto;
+            border-radius: 18px 18px 4px 18px;
+        }
+        .chat-bubble.received {
+            background: #f3f4f6;
+            color: #374151;
+            margin-right: auto;
+            border-radius: 18px 18px 18px 4px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator">
+        📶 You're offline. Some features may be limited.
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">S</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-900" data-translate="app_name">ServiceHub</h1>
+                </div>
+                <nav class="flex items-center space-x-4">
+                    <!-- Rewards Badge -->
+                    <div class="reward-badge text-white px-3 py-1 rounded-full text-sm font-bold cursor-pointer" onclick="showRewards()">
+                        🎁 <span id="user-points">250</span> pts
+                    </div>
+                    
+                    <div class="hidden md:flex space-x-4">
+                        <button onclick="showUserType(); closeLanguageDropdown();" class="text-gray-600 hover:text-blue-600 font-medium" data-translate="find_services">Find Services</button>
+                        <button onclick="showBookingHistory(); closeLanguageDropdown();" class="text-gray-600 hover:text-blue-600 font-medium" data-translate="my_bookings">My Bookings</button>
+                        <button onclick="showProviderRegistration(); closeLanguageDropdown();" class="text-gray-600 hover:text-blue-600 font-medium" data-translate="become_provider">Become a Provider</button>
+                        
+                        <!-- Language Dropdown -->
+                        <div class="relative">
+                            <button onclick="toggleLanguageDropdown()" class="flex items-center space-x-1 text-gray-600 hover:text-blue-600 font-medium">
+                                <span>🌐</span>
+                                <span id="current-language">English</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div id="language-dropdown" class="hidden absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                <button onclick="selectLanguage('kp'); closeLanguageDropdown();" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg">Kpelle</button>
+                                <button onclick="selectLanguage('bs'); closeLanguageDropdown();" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Bassa</button>
+                                <button onclick="selectLanguage('simple'); closeLanguageDropdown();" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-lg">Simple English</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Menu -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4 space-y-2">
+                <button onclick="showUserType(); closeLanguageDropdown(); toggleMobileMenu();" class="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 rounded" data-translate="find_services">Find Services</button>
+                <button onclick="showBookingHistory(); closeLanguageDropdown(); toggleMobileMenu();" class="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 rounded" data-translate="my_bookings">My Bookings</button>
+                <button onclick="showProviderRegistration(); closeLanguageDropdown(); toggleMobileMenu();" class="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 rounded" data-translate="become_provider">Become a Provider</button>
+                
+                <!-- Mobile Language Options -->
+                <div class="border-t pt-2 mt-2">
+                    <p class="px-4 py-2 text-sm text-gray-500 font-medium">Language</p>
+                    <button onclick="selectLanguage('kp'); toggleMobileMenu();" class="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Kpelle</button>
+                    <button onclick="selectLanguage('bs'); toggleMobileMenu();" class="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Bassa</button>
+                    <button onclick="selectLanguage('simple'); toggleMobileMenu();" class="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Simple English</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- User Type Selection -->
+        <div id="user-type-section" class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4" data-translate="welcome_title">Welcome to ServiceHub</h2>
+            <p class="text-xl text-gray-600 mb-8" data-translate="welcome_subtitle">Choose how you want to use our platform</p>
+            
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- Customer Option -->
+                <div class="bg-white rounded-2xl shadow-lg p-8 cursor-pointer hover:shadow-xl transition-all" onclick="selectUserType('customer')">
+                    <div class="text-6xl mb-4">🔍</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4" data-translate="need_service">I Need a Service</h3>
+                    <p class="text-gray-600 mb-6" data-translate="customer_desc">Find trusted professionals for home repairs, cleaning, tutoring, and more</p>
+                    <div class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold inline-block" data-translate="get_started">Get Started</div>
+                </div>
+                
+                <!-- Provider Option -->
+                <div class="bg-white rounded-2xl shadow-lg p-8 cursor-pointer hover:shadow-xl transition-all" onclick="selectUserType('provider')">
+                    <div class="text-6xl mb-4">💼</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4" data-translate="offer_service">I Offer Services</h3>
+                    <p class="text-gray-600 mb-6" data-translate="provider_desc">Join our network of professionals and grow your business</p>
+                    <div class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold inline-block" data-translate="join_now">Join Now</div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-3 gap-4 max-w-2xl mx-auto mt-12">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">2,500+</div>
+                    <div class="text-sm text-gray-600" data-translate="verified_providers">Verified Providers</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">15,000+</div>
+                    <div class="text-sm text-gray-600" data-translate="happy_customers">Happy Customers</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">4.8★</div>
+                    <div class="text-sm text-gray-600" data-translate="avg_rating">Average Rating</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero Section (Customer View) -->
+        <div id="hero-section" class="hidden text-center mb-12">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4" data-translate="find_services_title">Find Local Services in Minutes</h2>
+            <p class="text-xl text-gray-600 mb-8" data-translate="find_services_subtitle">Connect with trusted professionals in your area</p>
+            
+            <!-- Search Bar -->
+            <div class="max-w-2xl mx-auto mb-8">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input 
+                        type="text" 
+                        id="location-input"
+                        placeholder="Enter your location..." 
+                        data-translate-placeholder="enter_location"
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                    <button 
+                        onclick="findServices()"
+                        class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-semibold"
+                        data-translate="find_services_btn"
+                    >
+                        Find Services
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Referral Banner -->
+            <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl p-6 mb-8 max-w-2xl mx-auto">
+                <div class="flex items-center justify-center space-x-3">
+                    <span class="text-2xl">🎁</span>
+                    <div>
+                        <h3 class="font-bold text-lg" data-translate="referral_title">Invite Friends & Earn $5!</h3>
+                        <p class="text-sm opacity-90" data-translate="referral_desc">Share ServiceHub and get rewards for every friend who joins</p>
+                    </div>
+                    <button onclick="showReferral()" class="bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100" data-translate="invite_now">Invite Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Categories -->
+        <div id="categories-section" class="mb-12">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">Popular Services</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                <!-- Home Services -->
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('electrician')">
+                    <div class="text-4xl mb-3">⚡</div>
+                    <h4 class="font-semibold text-gray-900">Electrician</h4>
+                    <p class="text-sm text-gray-600">Wiring & Repairs</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('plumber')">
+                    <div class="text-4xl mb-3">🔧</div>
+                    <h4 class="font-semibold text-gray-900">Plumber</h4>
+                    <p class="text-sm text-gray-600">Pipes & Fixtures</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('handyman')">
+                    <div class="text-4xl mb-3">🔨</div>
+                    <h4 class="font-semibold text-gray-900">Handyman</h4>
+                    <p class="text-sm text-gray-600">General Repairs</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('cleaner')">
+                    <div class="text-4xl mb-3">🧹</div>
+                    <h4 class="font-semibold text-gray-900">Cleaner</h4>
+                    <p class="text-sm text-gray-600">Home & Office</p>
+                </div>
+                
+                <!-- Tech Services -->
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('computer-repair')">
+                    <div class="text-4xl mb-3">💻</div>
+                    <h4 class="font-semibold text-gray-900">Computer Repair</h4>
+                    <p class="text-sm text-gray-600">Hardware & Software</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('software-dev')">
+                    <div class="text-4xl mb-3">👨‍💻</div>
+                    <h4 class="font-semibold text-gray-900">Software Dev</h4>
+                    <p class="text-sm text-gray-600">Apps & Websites</p>
+                </div>
+                
+                <!-- Creative Services -->
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('graphics-design')">
+                    <div class="text-4xl mb-3">🎨</div>
+                    <h4 class="font-semibold text-gray-900">Graphics Design</h4>
+                    <p class="text-sm text-gray-600">Logos & Branding</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('photography')">
+                    <div class="text-4xl mb-3">📸</div>
+                    <h4 class="font-semibold text-gray-900">Photography</h4>
+                    <p class="text-sm text-gray-600">Events & Portraits</p>
+                </div>
+                
+                <!-- Professional Services -->
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('tutor')">
+                    <div class="text-4xl mb-3">📚</div>
+                    <h4 class="font-semibold text-gray-900">Tutor</h4>
+                    <p class="text-sm text-gray-600">Academic Help</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('freelance-writer')">
+                    <div class="text-4xl mb-3">✍️</div>
+                    <h4 class="font-semibold text-gray-900">Freelance Writer</h4>
+                    <p class="text-sm text-gray-600">Content & Articles</p>
+                </div>
+                
+                <!-- Transport & Delivery -->
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('driver')">
+                    <div class="text-4xl mb-3">🚗</div>
+                    <h4 class="font-semibold text-gray-900">Driver</h4>
+                    <p class="text-sm text-gray-600">Transportation</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('delivery')">
+                    <div class="text-4xl mb-3">📦</div>
+                    <h4 class="font-semibold text-gray-900">Delivery</h4>
+                    <p class="text-sm text-gray-600">Package & Food</p>
+                </div>
+                
+                <!-- Personal Services -->
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('personal-trainer')">
+                    <div class="text-4xl mb-3">💪</div>
+                    <h4 class="font-semibold text-gray-900">Personal Trainer</h4>
+                    <p class="text-sm text-gray-600">Fitness & Health</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('chef')">
+                    <div class="text-4xl mb-3">👨‍🍳</div>
+                    <h4 class="font-semibold text-gray-900">Chef</h4>
+                    <p class="text-sm text-gray-600">Catering & Cooking</p>
+                </div>
+                
+                <!-- Home Improvement -->
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('decks-porches')">
+                    <div class="text-4xl mb-3">🏗️</div>
+                    <h4 class="font-semibold text-gray-900">Decks & Porches</h4>
+                    <p class="text-sm text-gray-600">Building & Repair</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('roof-repair')">
+                    <div class="text-4xl mb-3">🏠</div>
+                    <h4 class="font-semibold text-gray-900">Roof Repair</h4>
+                    <p class="text-sm text-gray-600">Roofing & Gutters</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('fence-repair')">
+                    <div class="text-4xl mb-3">🚧</div>
+                    <h4 class="font-semibold text-gray-900">Fence Repair</h4>
+                    <p class="text-sm text-gray-600">Fencing & Gates</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('appliance-repair')">
+                    <div class="text-4xl mb-3">🔧</div>
+                    <h4 class="font-semibold text-gray-900">Appliance Repair</h4>
+                    <p class="text-sm text-gray-600">All Appliances</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('pest-control')">
+                    <div class="text-4xl mb-3">🐛</div>
+                    <h4 class="font-semibold text-gray-900">Pest Control</h4>
+                    <p class="text-sm text-gray-600">Extermination</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('gutter-services')">
+                    <div class="text-4xl mb-3">🏘️</div>
+                    <h4 class="font-semibold text-gray-900">Gutter Services</h4>
+                    <p class="text-sm text-gray-600">Cleaning & Repair</p>
+                </div>
+                
+                <!-- Business Services -->
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('accountant')">
+                    <div class="text-4xl mb-3">📊</div>
+                    <h4 class="font-semibold text-gray-900">Accountant</h4>
+                    <p class="text-sm text-gray-600">Tax & Bookkeeping</p>
+                </div>
+                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('marketing')">
+                    <div class="text-4xl mb-3">📈</div>
+                    <h4 class="font-semibold text-gray-900">Marketing</h4>
+                    <p class="text-sm text-gray-600">Digital & Social</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Providers List -->
+        <div id="providers-section" class="hidden fade-in">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h3 class="text-2xl font-bold text-gray-900">Available <span id="service-type">Services</span></h3>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="toggleFilters()" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg font-medium flex items-center space-x-2">
+                        <span>🔍</span>
+                        <span>Filter</span>
+                    </button>
+                    <select id="sort-select" onchange="applySorting()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Sort by...</option>
+                        <option value="rating">Highest Rating</option>
+                        <option value="price">Lowest Price</option>
+                        <option value="distance">Closest Distance</option>
+                    </select>
+                    <button onclick="showCategories()" class="text-blue-600 hover:text-blue-800 font-medium">← Back to Categories</button>
+                </div>
+            </div>
+
+            <!-- Filter Panel -->
+            <div id="filter-panel" class="hidden bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Rating Filter -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">Minimum Rating</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="rating-filter" value="" class="mr-2" checked>
+                                <span>Any Rating</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="rating-filter" value="4.0" class="mr-2">
+                                <span>4.0+ ⭐</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="rating-filter" value="4.5" class="mr-2">
+                                <span>4.5+ ⭐</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="rating-filter" value="4.8" class="mr-2">
+                                <span>4.8+ ⭐</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Price Filter -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">Price Range</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="price-filter" value="" class="mr-2" checked>
+                                <span>Any Price</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="price-filter" value="low" class="mr-2">
+                                <span>Under $50</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="price-filter" value="medium" class="mr-2">
+                                <span>$50 - $100</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="price-filter" value="high" class="mr-2">
+                                <span>Over $100</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Distance Filter -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">Distance</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="distance-filter" value="" class="mr-2" checked>
+                                <span>Any Distance</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="distance-filter" value="1" class="mr-2">
+                                <span>Within 1 mile</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="distance-filter" value="2" class="mr-2">
+                                <span>Within 2 miles</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="distance-filter" value="5" class="mr-2">
+                                <span>Within 5 miles</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Availability Filter -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">Availability</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="availability-filter" value="" class="mr-2" checked>
+                                <span>Any Time</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="availability-filter" value="now" class="mr-2">
+                                <span>Available Now 🟢</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="availability-filter" value="today" class="mr-2">
+                                <span>Available Today 🟡</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="availability-filter" value="tomorrow" class="mr-2">
+                                <span>Available Tomorrow 🔵</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-6 pt-4 border-t">
+                    <button onclick="clearFilters()" class="text-gray-600 hover:text-gray-800 font-medium">Clear All Filters</button>
+                    <div class="space-x-3">
+                        <button onclick="toggleFilters()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Close</button>
+                        <button onclick="applyFilters()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium">Apply Filters</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Count -->
+            <div id="results-count" class="mb-4 text-gray-600"></div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="providers-grid">
+                <!-- Providers will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Provider Registration Form -->
+        <div id="provider-registration" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Become a Service Provider</h3>
+                <button onclick="showUserType()" class="text-blue-600 hover:text-blue-800 font-medium">← Back</button>
+            </div>
+            
+            <!-- Registration Benefits -->
+            <div class="bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-xl p-6 mb-8">
+                <h4 class="text-xl font-bold mb-4">🚀 Join 2,500+ Successful Providers!</h4>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">$1,200+</div>
+                        <div class="text-sm opacity-90">Average Monthly Earnings</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">24/7</div>
+                        <div class="text-sm opacity-90">Customer Requests</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">Free</div>
+                        <div class="text-sm opacity-90">Registration & Setup</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Registration Form -->
+            <form onsubmit="submitProviderRegistration(event)" class="bg-white rounded-xl shadow-lg p-8">
+                <h4 class="text-xl font-semibold text-gray-900 mb-6">Provider Registration Form</h4>
+                
+                <!-- Personal Information -->
+                <div class="mb-8">
+                    <h5 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                        <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm mr-2">1</span>
+                        Personal Information
+                    </h5>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                            <input type="text" id="provider-name" required placeholder="Enter your full name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                            <input type="tel" id="provider-phone" required placeholder="e.g., 0881234567" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" id="provider-email" placeholder="your.email@example.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                            <input type="number" id="provider-age" min="18" max="70" placeholder="25" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Location Information -->
+                <div class="mb-8">
+                    <h5 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                        <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm mr-2">2</span>
+                        Location & Service Area
+                    </h5>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Current Location *</label>
+                            <select id="provider-location" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select your location</option>
+                                <option value="Monrovia">Monrovia</option>
+                                <option value="Paynesville">Paynesville</option>
+                                <option value="New Kru Town">New Kru Town</option>
+                                <option value="Congo Town">Congo Town</option>
+                                <option value="Sinkor">Sinkor</option>
+                                <option value="Mamba Point">Mamba Point</option>
+                                <option value="Bushrod Island">Bushrod Island</option>
+                                <option value="Red Light">Red Light</option>
+                                <option value="Caldwell">Caldwell</option>
+                                <option value="Other">Other (specify in address)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Specific Address</label>
+                            <input type="text" id="provider-address" placeholder="Street, community, landmark" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Service Coverage Area *</label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="service-area" value="Monrovia" class="mr-2">
+                                <span class="text-sm">Monrovia</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="service-area" value="Paynesville" class="mr-2">
+                                <span class="text-sm">Paynesville</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="service-area" value="New Kru Town" class="mr-2">
+                                <span class="text-sm">New Kru Town</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="service-area" value="Congo Town" class="mr-2">
+                                <span class="text-sm">Congo Town</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="service-area" value="Sinkor" class="mr-2">
+                                <span class="text-sm">Sinkor</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="service-area" value="Bushrod Island" class="mr-2">
+                                <span class="text-sm">Bushrod Island</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="service-area" value="Red Light" class="mr-2">
+                                <span class="text-sm">Red Light</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="service-area" value="Caldwell" class="mr-2">
+                                <span class="text-sm">Caldwell</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Service Information -->
+                <div class="mb-8">
+                    <h5 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                        <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm mr-2">3</span>
+                        Service Information
+                    </h5>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Primary Service Category *</label>
+                        <select id="primary-service" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select your main service</option>
+                            <option value="Electrician">⚡ Electrician</option>
+                            <option value="Plumber">🔧 Plumber</option>
+                            <option value="Handyman">🔨 Handyman</option>
+                            <option value="Cleaner">🧹 Cleaner</option>
+                            <option value="Computer Repair">💻 Computer Repair</option>
+                            <option value="Software Developer">👨‍💻 Software Developer</option>
+                            <option value="Graphics Designer">🎨 Graphics Designer</option>
+                            <option value="Photographer">📸 Photographer</option>
+                            <option value="Tutor">📚 Tutor</option>
+                            <option value="Writer">✍️ Freelance Writer</option>
+                            <option value="Driver">🚗 Driver</option>
+                            <option value="Delivery">📦 Delivery</option>
+                            <option value="Personal Trainer">💪 Personal Trainer</option>
+                            <option value="Chef">👨‍🍳 Chef</option>
+                            <option value="Accountant">📊 Accountant</option>
+                            <option value="Marketing">📈 Marketing</option>
+                            <option value="Other">Other (specify below)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Years of Experience *</label>
+                            <select id="experience-years" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select experience</option>
+                                <option value="Less than 1 year">Less than 1 year</option>
+                                <option value="1-2 years">1-2 years</option>
+                                <option value="3-5 years">3-5 years</option>
+                                <option value="6-10 years">6-10 years</option>
+                                <option value="More than 10 years">More than 10 years</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Your Rate *</label>
+                            <div class="flex">
+                                <span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">$</span>
+                                <input type="number" id="provider-rate" required min="5" placeholder="50" class="flex-1 px-3 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500">
+                                <select id="rate-type" class="ml-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="per hour">per hour</option>
+                                    <option value="per job">per job</option>
+                                    <option value="per day">per day</option>
+                                    <option value="per session">per session</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Skills & Specialties</label>
+                        <textarea id="provider-skills" rows="3" placeholder="List your specific skills, certifications, or specialties (e.g., Residential wiring, Emergency repairs, Licensed electrician)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                </div>
+                
+                <!-- Availability -->
+                <div class="mb-8">
+                    <h5 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                        <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm mr-2">4</span>
+                        Availability
+                    </h5>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Working Days *</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="working-days" value="Monday" class="mr-2">
+                                    <span class="text-sm">Monday</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="working-days" value="Tuesday" class="mr-2">
+                                    <span class="text-sm">Tuesday</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="working-days" value="Wednesday" class="mr-2">
+                                    <span class="text-sm">Wednesday</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="working-days" value="Thursday" class="mr-2">
+                                    <span class="text-sm">Thursday</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="working-days" value="Friday" class="mr-2">
+                                    <span class="text-sm">Friday</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="working-days" value="Saturday" class="mr-2">
+                                    <span class="text-sm">Saturday</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="working-days" value="Sunday" class="mr-2">
+                                    <span class="text-sm">Sunday</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Working Hours *</label>
+                            <div class="space-y-3">
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm">From:</label>
+                                    <input type="time" id="work-start" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm">To:</label>
+                                    <input type="time" id="work-end" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="emergency-available" class="mr-2">
+                                    <span class="text-sm">Available for emergency calls</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="mb-8">
+                    <h5 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                        <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm mr-2">5</span>
+                        Additional Information
+                    </h5>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Do you have your own tools/equipment? *</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="has-tools" value="Yes" required class="mr-2">
+                                    <span class="text-sm">Yes, I have all necessary tools</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="has-tools" value="Partial" required class="mr-2">
+                                    <span class="text-sm">I have some tools</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="has-tools" value="No" required class="mr-2">
+                                    <span class="text-sm">No, I need tools provided</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Do you have transportation? *</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="has-transport" value="Yes" required class="mr-2">
+                                    <span class="text-sm">Yes (car/motorcycle)</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="has-transport" value="Public" required class="mr-2">
+                                    <span class="text-sm">I use public transport</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="has-transport" value="No" required class="mr-2">
+                                    <span class="text-sm">No transportation</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Previous Work Experience</label>
+                            <textarea id="work-experience" rows="3" placeholder="Describe your previous work experience, companies you've worked for, or notable projects" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Why do you want to join ServiceHub?</label>
+                            <textarea id="motivation" rows="2" placeholder="Tell us why you want to become a service provider on our platform" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Terms and Submit -->
+                <div class="border-t pt-6">
+                    <div class="mb-6">
+                        <label class="flex items-start">
+                            <input type="checkbox" id="agree-terms" required class="mr-3 mt-1">
+                            <span class="text-sm text-gray-700">
+                                I agree to ServiceHub's terms and conditions. I understand that:
+                                <ul class="list-disc list-inside mt-2 space-y-1 text-xs text-gray-600">
+                                    <li>All information provided is accurate and truthful</li>
+                                    <li>I will provide quality service to customers</li>
+                                    <li>I will maintain professional communication</li>
+                                    <li>ServiceHub may verify my credentials and background</li>
+                                    <li>I can be removed from the platform for poor performance</li>
+                                </ul>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button type="button" onclick="showUserType()" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
+                            Cancel
+                        </button>
+                        <button type="submit" class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium">
+                            🚀 Submit Application
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Provider Dashboard -->
+        <div id="provider-dashboard" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900" data-translate="provider_dashboard">Provider Dashboard</h3>
+                <button onclick="showUserType()" class="text-blue-600 hover:text-blue-800 font-medium">← Back</button>
+            </div>
+            
+            <!-- Provider Stats -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="text-3xl font-bold text-green-600">$1,250</div>
+                    <div class="text-sm text-gray-600" data-translate="total_earnings">Total Earnings</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="text-3xl font-bold text-blue-600">47</div>
+                    <div class="text-sm text-gray-600" data-translate="completed_jobs">Completed Jobs</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="text-3xl font-bold text-yellow-600">4.9★</div>
+                    <div class="text-sm text-gray-600" data-translate="your_rating">Your Rating</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="text-3xl font-bold text-purple-600">3</div>
+                    <div class="text-sm text-gray-600" data-translate="pending_jobs">Pending Jobs</div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <button onclick="showJobRequests()" class="bg-blue-600 text-white p-6 rounded-xl hover:bg-blue-700 text-center">
+                    <div class="text-3xl mb-2">📋</div>
+                    <div class="font-semibold" data-translate="view_job_requests">View Job Requests</div>
+                </button>
+                <button onclick="showWithdrawal()" class="bg-green-600 text-white p-6 rounded-xl hover:bg-green-700 text-center">
+                    <div class="text-3xl mb-2">💰</div>
+                    <div class="font-semibold" data-translate="withdraw_earnings">Withdraw Earnings</div>
+                </button>
+                <button onclick="showProviderProfile()" class="bg-purple-600 text-white p-6 rounded-xl hover:bg-purple-700 text-center">
+                    <div class="text-3xl mb-2">👤</div>
+                    <div class="font-semibold" data-translate="edit_profile">Edit Profile</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Payment Modal -->
+        <div id="payment-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6" data-translate="choose_payment">Choose Payment Method</h3>
+                
+                <div class="space-y-4 mb-6">
+                    <!-- Orange Money -->
+                    <div class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:bg-orange-50 hover:border-orange-500" onclick="selectPayment('orange')">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold">OM</div>
+                            <div>
+                                <div class="font-semibold">Orange Money</div>
+                                <div class="text-sm text-gray-600" data-translate="instant_payment">Instant payment via mobile</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- LoneStar Cash -->
+                    <div class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:bg-blue-50 hover:border-blue-500" onclick="selectPayment('lonestar')">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">LC</div>
+                            <div>
+                                <div class="font-semibold">LoneStar Cash</div>
+                                <div class="text-sm text-gray-600" data-translate="secure_mobile_payment">Secure mobile payment</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cash Payment -->
+                    <div class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:bg-green-50 hover:border-green-500" onclick="selectPayment('cash')">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold">💵</div>
+                            <div>
+                                <div class="font-semibold" data-translate="pay_cash">Pay with Cash</div>
+                                <div class="text-sm text-gray-600" data-translate="pay_after_service">Pay after service completion</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ServiceHub Wallet -->
+                    <div class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:bg-purple-50 hover:border-purple-500" onclick="selectPayment('wallet')">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold">SW</div>
+                            <div>
+                                <div class="font-semibold">ServiceHub Wallet</div>
+                                <div class="text-sm text-gray-600">Balance: $25.50</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button onclick="closePaymentModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50" data-translate="cancel">Cancel</button>
+                    <button onclick="processPayment()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700" data-translate="continue">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Provider Profile Modal -->
+        <div id="provider-profile-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <!-- Header -->
+                <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center rounded-t-xl">
+                    <h3 class="text-2xl font-bold text-gray-900">Provider Profile</h3>
+                    <button onclick="closeProviderProfile()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                </div>
+                
+                <!-- Profile Content -->
+                <div id="provider-profile-content" class="p-6">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Modal -->
+        <div id="booking-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6" data-translate="book_service">Book Service</h3>
+                <div id="provider-details" class="mb-6">
+                    <!-- Provider details will be populated -->
+                </div>
+                
+                <form onsubmit="submitBooking(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="your_phone">Your Phone Number</label>
+                        <input type="tel" id="customer-phone" required placeholder="e.g., 0881234567" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="preferred_date">Preferred Date</label>
+                        <input type="date" id="booking-date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="preferred_time">Preferred Time</label>
+                        <select id="booking-time" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="" data-translate="select_time">Select time</option>
+                            <option value="morning" data-translate="morning">Morning (8AM - 12PM)</option>
+                            <option value="afternoon" data-translate="afternoon">Afternoon (12PM - 5PM)</option>
+                            <option value="evening" data-translate="evening">Evening (5PM - 8PM)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="work_description">Description of Work</label>
+                        <textarea id="work-description" required rows="3" placeholder="Describe what you need help with..." data-translate-placeholder="describe_work" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div class="flex space-x-4 pt-4">
+                        <button type="button" onclick="closeBookingModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50" data-translate="cancel">Cancel</button>
+                        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700" data-translate="book_now">Book Now</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Booking History Section -->
+        <div id="booking-history-section" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">My Booking History</h3>
+                <button onclick="showCategories()" class="text-blue-600 hover:text-blue-800 font-medium">← Back to Services</button>
+            </div>
+            
+            <div id="booking-history-list" class="space-y-4">
+                <!-- Booking history items will be populated by JavaScript -->
+            </div>
+            
+            <div id="no-bookings" class="hidden text-center py-12">
+                <div class="text-6xl mb-4">📋</div>
+                <h4 class="text-xl font-semibold text-gray-900 mb-2">No Bookings Yet</h4>
+                <p class="text-gray-600 mb-6">You haven't made any service bookings yet.</p>
+                <button onclick="showCategories()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium">
+                    Find Services
+                </button>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="success-message" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+            <div class="flex items-center space-x-2">
+                <span>✓</span>
+                <span>Booking request sent successfully!</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div class="md:col-span-1">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <a href="javascript:void(0);" onclick="showCategories()" class="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center hover:opacity-80 transition-opacity">
+                            <span class="text-white font-bold">S</span>
+                        </a>
+                        <a href="javascript:void(0);" onclick="showCategories()" class="text-xl font-bold hover:text-gray-300 transition-colors">ServiceHub</a>
+                    </div>
+                    <p class="text-gray-400 mb-4">Connecting you with trusted local service providers.</p>
+                </div>
+
+                <!-- For Customers -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">For Customers</h4>
+                    <ul class="space-y-2">
+                        <li><a href="javascript:void(0);" onclick="showHowItWorks()" class="text-gray-400 hover:text-white transition-colors">How it works</a></li>
+                        <li><a href="javascript:void(0);" onclick="showSafety()" class="text-gray-400 hover:text-white transition-colors">Safety</a></li>
+                        <li><a href="javascript:void(0);" onclick="showSupport()" class="text-gray-400 hover:text-white transition-colors">Support</a></li>
+                    </ul>
+                </div>
+
+                <!-- For Providers -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">For Providers</h4>
+                    <ul class="space-y-2">
+                        <li><a href="javascript:void(0);" onclick="showJoinProvider()" class="text-gray-400 hover:text-white transition-colors">Join as Provider</a></li>
+                        <li><a href="javascript:void(0);" onclick="showProviderResources()" class="text-gray-400 hover:text-white transition-colors">Provider Resources</a></li>
+                        <li><a href="javascript:void(0);" onclick="showSuccessStories()" class="text-gray-400 hover:text-white transition-colors">Success Stories</a></li>
+                    </ul>
+                </div>
+
+                <!-- Company -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="javascript:void(0);" onclick="showAbout()" class="text-gray-400 hover:text-white transition-colors">About</a></li>
+                        <li><a href="javascript:void(0);" onclick="showCareers()" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="javascript:void(0);" onclick="showContact()" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Section -->
+            <div class="border-t border-gray-800 mt-8 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="text-gray-400 text-sm">
+                        © 2024 ServiceHub. All rights reserved.
+                    </div>
+                    <div class="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">Cookie Policy</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">Become a Provider</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Language translations
+        const translations = {
+            en: {
+                app_name: "ServiceHub",
+                welcome_title: "Welcome to ServiceHub",
+                welcome_subtitle: "Choose how you want to use our platform",
+                need_service: "I Need a Service",
+                customer_desc: "Find trusted professionals for home repairs, cleaning, tutoring, and more",
+                get_started: "Get Started",
+                offer_service: "I Offer Services",
+                provider_desc: "Join our network of professionals and grow your business",
+                join_now: "Join Now",
+                verified_providers: "Verified Providers",
+                happy_customers: "Happy Customers",
+                avg_rating: "Average Rating",
+                find_services_title: "Find Local Services in Minutes",
+                find_services_subtitle: "Connect with trusted professionals in your area",
+                enter_location: "Enter your location...",
+                find_services_btn: "Find Services",
+                referral_title: "Invite Friends & Earn $5!",
+                referral_desc: "Share ServiceHub and get rewards for every friend who joins",
+                invite_now: "Invite Now",
+                book_service: "Book Service",
+                your_phone: "Your Phone Number",
+                preferred_date: "Preferred Date",
+                preferred_time: "Preferred Time",
+                select_time: "Select time",
+                morning: "Morning (8AM - 12PM)",
+                afternoon: "Afternoon (12PM - 5PM)",
+                evening: "Evening (5PM - 8PM)",
+                work_description: "Description of Work",
+                describe_work: "Describe what you need help with...",
+                cancel: "Cancel",
+                book_now: "Book Now",
+                choose_payment: "Choose Payment Method",
+                instant_payment: "Instant payment via mobile",
+                secure_mobile_payment: "Secure mobile payment",
+                pay_cash: "Pay with Cash",
+                pay_after_service: "Pay after service completion",
+                continue: "Continue",
+                provider_dashboard: "Provider Dashboard",
+                total_earnings: "Total Earnings",
+                completed_jobs: "Completed Jobs",
+                your_rating: "Your Rating",
+                pending_jobs: "Pending Jobs",
+                view_job_requests: "View Job Requests",
+                withdraw_earnings: "Withdraw Earnings",
+                edit_profile: "Edit Profile"
+            },
+            kp: {
+                app_name: "ServiceHub",
+                welcome_title: "Kaa ServiceHub kɛ",
+                welcome_subtitle: "Kɛ mɛni kɛ i pɛlɛ kɛ platform kɛ",
+                need_service: "Ŋa service pɛlɛ",
+                customer_desc: "Kɛ mɛni kɛ i kɛ professional kɛ kɛ house repair, cleaning, tutoring",
+                get_started: "Kɛ start",
+                offer_service: "Ŋa service kɛ",
+                provider_desc: "Kaa mɛ professional network kɛ kɛ i business grow",
+                join_now: "Join kɛ",
+                verified_providers: "Verified Providers",
+                happy_customers: "Happy Customers",
+                avg_rating: "Average Rating"
+            },
+            bs: {
+                app_name: "ServiceHub",
+                welcome_title: "Nyɔŋ ServiceHub kɛ",
+                welcome_subtitle: "Kɛ way kɛ i want use platform kɛ",
+                need_service: "I want service",
+                customer_desc: "Find good people for house work, cleaning, teaching",
+                get_started: "Start now",
+                offer_service: "I get service",
+                provider_desc: "Join our people dem and make your business big",
+                join_now: "Join now"
+            },
+            simple: {
+                app_name: "ServiceHub",
+                welcome_title: "Welcome to ServiceHub",
+                welcome_subtitle: "Pick what you want to do",
+                need_service: "I Want Help",
+                customer_desc: "Find good workers for your home and business",
+                get_started: "Start Now",
+                offer_service: "I Can Work",
+                provider_desc: "Join us and make money with your skills",
+                join_now: "Join Today"
+            }
+        };
+
+        // App state
+        let currentLanguage = 'en';
+        let currentUserType = null;
+        let isOnline = navigator.onLine;
+        let selectedPaymentMethod = null;
+        let userPoints = parseInt(localStorage.getItem('userPoints') || '250');
+        let offlineData = JSON.parse(localStorage.getItem('offlineData') || '{}');
+
+        // Sample data for service providers
+        const serviceProviders = {
+            electrician: [
+                { id: 1, name: "Mike Johnson", rating: 4.9, reviews: 127, price: "$75/hour", priceValue: 75, distance: "0.8 miles", distanceValue: 0.8, experience: "8 years", specialties: ["Wiring", "Panel Upgrades", "Lighting"], availability: "now", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c", bio: "Licensed electrician with 8+ years of experience. Specializing in residential and commercial electrical work. Available for emergency calls 24/7.", portfolio: ["1581833428-421639b4-762e-4c00-9b5d-3e6b1e78b5c7", "1581833429-421639b4-762e-4c00-9b5d-3e6b1e78b5c8", "1581833430-421639b4-762e-4c00-9b5d-3e6b1e78b5c9"], certifications: ["Licensed Electrician", "OSHA Safety Certified", "Emergency Response Trained"], languages: ["English", "Basic Kpelle"] },
+                { id: 2, name: "Sarah Chen", rating: 4.8, reviews: 89, price: "$70/hour", priceValue: 70, distance: "1.2 miles", distanceValue: 1.2, experience: "6 years", specialties: ["Residential", "Emergency Repairs"], availability: "today", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610", bio: "Experienced residential electrician focused on safety and quality. Quick response for emergency repairs and installations.", portfolio: ["1581833431-421639b4-762e-4c00-9b5d-3e6b1e78b5d0", "1581833432-421639b4-762e-4c00-9b5d-3e6b1e78b5d1"], certifications: ["Residential Electrician License", "Safety First Certified"], languages: ["English", "Mandarin"] },
+                { id: 3, name: "David Rodriguez", rating: 4.7, reviews: 156, price: "$80/hour", priceValue: 80, distance: "2.1 miles", distanceValue: 2.1, experience: "12 years", specialties: ["Commercial", "Industrial"], availability: "tomorrow", photoId: "1472099645-e36c4e4a70f6", bio: "Master electrician with extensive commercial and industrial experience. Specializing in large-scale electrical projects and system upgrades.", portfolio: ["1581833433-421639b4-762e-4c00-9b5d-3e6b1e78b5d2", "1581833434-421639b4-762e-4c00-9b5d-3e6b1e78b5d3", "1581833435-421639b4-762e-4c00-9b5d-3e6b1e78b5d4"], certifications: ["Master Electrician", "Industrial Safety Certified", "Project Management"], languages: ["English", "Spanish"] }
+            ],
+            plumber: [
+                { id: 4, name: "Lisa Thompson", rating: 4.9, reviews: 203, price: "$85/hour", priceValue: 85, distance: "0.5 miles", distanceValue: 0.5, experience: "10 years", specialties: ["Drain Cleaning", "Pipe Repair", "Water Heaters"], availability: "now", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" },
+                { id: 5, name: "Robert Kim", rating: 4.6, reviews: 94, price: "$75/hour", priceValue: 75, distance: "1.8 miles", distanceValue: 1.8, experience: "7 years", specialties: ["Bathroom Remodeling", "Leak Detection"], availability: "tomorrow", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 6, name: "Maria Garcia", rating: 4.8, reviews: 167, price: "$90/hour", priceValue: 90, distance: "1.4 miles", distanceValue: 1.4, experience: "15 years", specialties: ["Emergency Service", "Sewer Lines"], availability: "today", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" }
+            ],
+            handyman: [
+                { id: 16, name: "Fix-It Frank", rating: 4.8, reviews: 178, price: "$65/hour", priceValue: 65, distance: "1.3 miles", distanceValue: 1.3, experience: "12 years", specialties: ["Furniture Assembly", "Drywall", "Painting"], availability: "now", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" },
+                { id: 17, name: "Handy Helper Co.", rating: 4.7, reviews: 145, price: "$70/hour", priceValue: 70, distance: "2.0 miles", distanceValue: 2.0, experience: "9 years", specialties: ["Home Repairs", "Installation", "Maintenance"], availability: "today", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 18, name: "Quick Fix Solutions", rating: 4.9, reviews: 201, price: "$75/hour", priceValue: 75, distance: "0.6 miles", distanceValue: 0.6, experience: "7 years", specialties: ["Emergency Repairs", "Appliance Installation"], availability: "tomorrow", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" }
+            ],
+            cleaner: [
+                { id: 13, name: "Clean Team Pro", rating: 4.9, reviews: 234, price: "$120/session", priceValue: 120, distance: "1.1 miles", distanceValue: 1.1, experience: "8 years", specialties: ["Deep Cleaning", "Move-in/out", "Office"], availability: "today", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 14, name: "Sparkle Services", rating: 4.7, reviews: 167, price: "$100/session", priceValue: 100, distance: "1.7 miles", distanceValue: 1.7, experience: "6 years", specialties: ["Regular Cleaning", "Eco-friendly"], availability: "now", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" },
+                { id: 15, name: "Fresh Start Cleaning", rating: 4.8, reviews: 198, price: "$110/session", priceValue: 110, distance: "0.8 miles", distanceValue: 0.8, experience: "10 years", specialties: ["Post-construction", "Carpet Cleaning"], availability: "tomorrow", photoId: "1472099645-e36c4e4a70f6" }
+            ],
+            'computer-repair': [
+                { id: 19, name: "TechFix Solutions", rating: 4.9, reviews: 156, price: "$80/hour", priceValue: 80, distance: "0.9 miles", distanceValue: 0.9, experience: "7 years", specialties: ["Hardware Repair", "Virus Removal", "Data Recovery"], availability: "now", photoId: "1472099645-e36c4e4a70f6" },
+                { id: 20, name: "Digital Doctor", rating: 4.8, reviews: 203, price: "$75/hour", priceValue: 75, distance: "1.5 miles", distanceValue: 1.5, experience: "10 years", specialties: ["Laptop Repair", "Network Setup", "Software Install"], availability: "today", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 21, name: "PC Rescue Team", rating: 4.7, reviews: 134, price: "$70/hour", priceValue: 70, distance: "2.2 miles", distanceValue: 2.2, experience: "5 years", specialties: ["Gaming PCs", "Upgrades", "Troubleshooting"], availability: "tomorrow", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" }
+            ],
+            'software-dev': [
+                { id: 22, name: "CodeCraft Studios", rating: 4.9, reviews: 89, price: "$120/hour", priceValue: 120, distance: "1.1 miles", distanceValue: 1.1, experience: "8 years", specialties: ["Web Development", "Mobile Apps", "E-commerce"], availability: "today", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" },
+                { id: 23, name: "DevMaster Pro", rating: 4.8, reviews: 67, price: "$100/hour", priceValue: 100, distance: "0.7 miles", distanceValue: 0.7, experience: "6 years", specialties: ["React", "Node.js", "Database Design"], availability: "now", photoId: "1472099645-e36c4e4a70f6" },
+                { id: 24, name: "AppBuilder Inc", rating: 4.7, reviews: 112, price: "$110/hour", priceValue: 110, distance: "1.8 miles", distanceValue: 1.8, experience: "9 years", specialties: ["iOS Apps", "Android Apps", "API Integration"], availability: "tomorrow", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" }
+            ],
+            'graphics-design': [
+                { id: 25, name: "Creative Minds", rating: 4.9, reviews: 178, price: "$60/hour", priceValue: 60, distance: "0.6 miles", distanceValue: 0.6, experience: "5 years", specialties: ["Logo Design", "Branding", "Print Design"], availability: "now", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" },
+                { id: 26, name: "Design Studio Pro", rating: 4.8, reviews: 145, price: "$55/hour", priceValue: 55, distance: "1.3 miles", distanceValue: 1.3, experience: "7 years", specialties: ["Web Design", "Social Media", "Illustrations"], availability: "today", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" },
+                { id: 27, name: "Pixel Perfect", rating: 4.7, reviews: 201, price: "$65/hour", priceValue: 65, distance: "2.0 miles", distanceValue: 2.0, experience: "4 years", specialties: ["UI/UX Design", "Packaging", "Marketing Materials"], availability: "tomorrow", photoId: "1472099645-e36c4e4a70f6" }
+            ],
+            photography: [
+                { id: 28, name: "Lens Masters", rating: 4.9, reviews: 234, price: "$150/session", priceValue: 150, distance: "1.2 miles", distanceValue: 1.2, experience: "10 years", specialties: ["Weddings", "Portraits", "Events"], availability: "today", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 29, name: "Capture Moments", rating: 4.8, reviews: 167, price: "$120/session", priceValue: 120, distance: "0.8 miles", distanceValue: 0.8, experience: "6 years", specialties: ["Family Photos", "Business Headshots", "Product Photography"], availability: "now", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" },
+                { id: 30, name: "Focus Photography", rating: 4.7, reviews: 189, price: "$130/session", priceValue: 130, distance: "1.7 miles", distanceValue: 1.7, experience: "8 years", specialties: ["Real Estate", "Fashion", "Nature"], availability: "tomorrow", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" }
+            ],
+            tutor: [
+                { id: 7, name: "Dr. James Wilson", rating: 4.9, reviews: 78, price: "$60/hour", priceValue: 60, distance: "1.0 miles", distanceValue: 1.0, experience: "5 years", specialties: ["Math", "Physics", "SAT Prep"], availability: "today", photoId: "1472099645-e36c4e4a70f6" },
+                { id: 8, name: "Emily Davis", rating: 4.8, reviews: 112, price: "$45/hour", priceValue: 45, distance: "0.7 miles", distanceValue: 0.7, experience: "4 years", specialties: ["English", "Writing", "Literature"], availability: "now", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" },
+                { id: 9, name: "Alex Patel", rating: 4.7, reviews: 89, price: "$55/hour", priceValue: 55, distance: "2.3 miles", distanceValue: 2.3, experience: "6 years", specialties: ["Computer Science", "Programming"], availability: "tomorrow", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" }
+            ],
+            'freelance-writer': [
+                { id: 31, name: "WordCraft Writers", rating: 4.8, reviews: 156, price: "$40/hour", priceValue: 40, distance: "1.1 miles", distanceValue: 1.1, experience: "6 years", specialties: ["Blog Posts", "Website Copy", "SEO Content"], availability: "now", photoId: "1472099645-e36c4e4a70f6" },
+                { id: 32, name: "Content Creator Pro", rating: 4.9, reviews: 89, price: "$50/hour", priceValue: 50, distance: "0.9 miles", distanceValue: 0.9, experience: "8 years", specialties: ["Technical Writing", "Marketing Copy", "Press Releases"], availability: "today", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 33, name: "The Write Solution", rating: 4.7, reviews: 123, price: "$45/hour", priceValue: 45, distance: "1.6 miles", distanceValue: 1.6, experience: "5 years", specialties: ["Academic Writing", "Editing", "Proofreading"], availability: "tomorrow", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" }
+            ],
+            driver: [
+                { id: 10, name: "Carlos Martinez", rating: 4.8, reviews: 245, price: "$25/trip", priceValue: 25, distance: "0.3 miles", distanceValue: 0.3, experience: "3 years", specialties: ["Airport Rides", "City Tours", "Events"], availability: "now", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610", bio: "Professional driver with 3+ years experience. Clean, comfortable vehicle with AC. Specializing in airport transfers and city tours. Always on time and reliable.", portfolio: ["1449824236-829c3acf-320e-4591-b906-aaf040f4e330", "1449824237-829c3acf-320e-4591-b906-aaf040f4e331", "1449824238-829c3acf-320e-4591-b906-aaf040f4e332"], certifications: ["Valid Driver's License", "Commercial Driver Permit", "First Aid Certified"], languages: ["English", "Spanish", "Basic Kpelle"], vehicle: "Toyota Camry 2020 - Clean & Air Conditioned" },
+                { id: 11, name: "Jennifer Lee", rating: 4.9, reviews: 189, price: "$30/trip", priceValue: 30, distance: "0.9 miles", distanceValue: 0.9, experience: "5 years", specialties: ["Long Distance", "Medical Appointments"], availability: "today", photoId: "1472099645-e36c4e4a70f6", bio: "Experienced and caring driver specializing in medical appointments and long-distance trips. Patient and understanding with elderly passengers.", portfolio: ["1449824239-829c3acf-320e-4591-b906-aaf040f4e333", "1449824240-829c3acf-320e-4591-b906-aaf040f4e334"], certifications: ["Professional Driver License", "Medical Transport Certified", "CPR Certified"], languages: ["English", "Korean"], vehicle: "Honda Accord 2019 - Spacious & Comfortable" },
+                { id: 12, name: "Ahmed Hassan", rating: 4.6, reviews: 156, price: "$22/trip", priceValue: 22, distance: "1.6 miles", distanceValue: 1.6, experience: "4 years", specialties: ["Night Service", "Package Delivery"], availability: "tomorrow", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65", bio: "Reliable night driver available 24/7. Experienced in package delivery and late-night transportation. Safe and secure service guaranteed.", portfolio: ["1449824241-829c3acf-320e-4591-b906-aaf040f4e335", "1449824242-829c3acf-320e-4591-b906-aaf040f4e336"], certifications: ["Night Driving Certified", "Package Handling License", "Security Clearance"], languages: ["English", "Arabic", "French"], vehicle: "Nissan Sentra 2021 - Fuel Efficient & Reliable" }
+            ],
+            delivery: [
+                { id: 34, name: "Swift Delivery", rating: 4.8, reviews: 298, price: "$15/delivery", priceValue: 15, distance: "0.4 miles", distanceValue: 0.4, experience: "3 years", specialties: ["Food Delivery", "Same Day", "Express"], availability: "now", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" },
+                { id: 35, name: "QuickRun Services", rating: 4.7, reviews: 167, price: "$18/delivery", priceValue: 18, distance: "1.2 miles", distanceValue: 1.2, experience: "4 years", specialties: ["Package Pickup", "Document Delivery", "Grocery"], availability: "today", photoId: "1472099645-e36c4e4a70f6" },
+                { id: 36, name: "Express Couriers", rating: 4.9, reviews: 234, price: "$20/delivery", priceValue: 20, distance: "0.8 miles", distanceValue: 0.8, experience: "6 years", specialties: ["Business Delivery", "Medical Supplies", "Fragile Items"], availability: "tomorrow", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" }
+            ],
+            'personal-trainer': [
+                { id: 37, name: "FitLife Coaching", rating: 4.9, reviews: 145, price: "$70/session", priceValue: 70, distance: "0.7 miles", distanceValue: 0.7, experience: "7 years", specialties: ["Weight Loss", "Strength Training", "Nutrition"], availability: "now", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 38, name: "Peak Performance", rating: 4.8, reviews: 189, price: "$65/session", priceValue: 65, distance: "1.4 miles", distanceValue: 1.4, experience: "5 years", specialties: ["HIIT", "Yoga", "Rehabilitation"], availability: "today", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" },
+                { id: 39, name: "Strong & Fit", rating: 4.7, reviews: 123, price: "$60/session", priceValue: 60, distance: "2.1 miles", distanceValue: 2.1, experience: "4 years", specialties: ["Bodybuilding", "Cardio", "Flexibility"], availability: "tomorrow", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" }
+            ],
+            chef: [
+                { id: 40, name: "Gourmet Kitchen", rating: 4.9, reviews: 167, price: "$100/event", priceValue: 100, distance: "1.0 miles", distanceValue: 1.0, experience: "10 years", specialties: ["Private Dining", "Catering", "Meal Prep"], availability: "today", photoId: "1472099645-e36c4e4a70f6" },
+                { id: 41, name: "Culinary Masters", rating: 4.8, reviews: 134, price: "$90/event", priceValue: 90, distance: "0.6 miles", distanceValue: 0.6, experience: "8 years", specialties: ["Wedding Catering", "Corporate Events", "Cooking Classes"], availability: "now", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 42, name: "Fresh Flavors", rating: 4.7, reviews: 198, price: "$85/event", priceValue: 85, distance: "1.8 miles", distanceValue: 1.8, experience: "6 years", specialties: ["Healthy Meals", "Vegan Options", "International Cuisine"], availability: "tomorrow", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" }
+            ],
+            accountant: [
+                { id: 43, name: "TaxPro Services", rating: 4.9, reviews: 234, price: "$80/hour", priceValue: 80, distance: "1.3 miles", distanceValue: 1.3, experience: "12 years", specialties: ["Tax Preparation", "Bookkeeping", "Business Consulting"], availability: "today", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" },
+                { id: 44, name: "Financial Solutions", rating: 4.8, reviews: 156, price: "$75/hour", priceValue: 75, distance: "0.9 miles", distanceValue: 0.9, experience: "9 years", specialties: ["Payroll", "Financial Planning", "Audit Support"], availability: "now", photoId: "1472099645-e36c4e4a70f6" },
+                { id: 45, name: "Numbers Expert", rating: 4.7, reviews: 189, price: "$70/hour", priceValue: 70, distance: "2.0 miles", distanceValue: 2.0, experience: "7 years", specialties: ["Small Business", "Personal Tax", "QuickBooks"], availability: "tomorrow", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" }
+            ],
+            marketing: [
+                { id: 46, name: "Digital Growth", rating: 4.9, reviews: 145, price: "$90/hour", priceValue: 90, distance: "0.8 miles", distanceValue: 0.8, experience: "6 years", specialties: ["Social Media", "SEO", "Google Ads"], availability: "now", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 47, name: "Brand Builders", rating: 4.8, reviews: 167, price: "$85/hour", priceValue: 85, distance: "1.5 miles", distanceValue: 1.5, experience: "8 years", specialties: ["Content Marketing", "Email Campaigns", "Analytics"], availability: "today", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" },
+                { id: 48, name: "Marketing Pros", rating: 4.7, reviews: 123, price: "$80/hour", priceValue: 80, distance: "1.9 miles", distanceValue: 1.9, experience: "5 years", specialties: ["Facebook Ads", "Influencer Marketing", "Brand Strategy"], availability: "tomorrow", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" }
+            ],
+            'decks-porches': [
+                { id: 49, name: "Deck Masters", rating: 3.7, reviews: 1200, price: "$1,890/project", priceValue: 1890, distance: "1.2 miles", distanceValue: 1.2, experience: "12 years", specialties: ["Deck Building", "Porch Construction", "Wood Restoration"], availability: "today", photoId: "1472099645-e36c4e4a70f6" },
+                { id: 50, name: "Outdoor Living Pro", rating: 4.1, reviews: 890, price: "$1,650/project", priceValue: 1650, distance: "2.1 miles", distanceValue: 2.1, experience: "9 years", specialties: ["Custom Decks", "Railings", "Pergolas"], availability: "tomorrow", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 51, name: "Porch & Deck Solutions", rating: 3.9, reviews: 756, price: "$2,100/project", priceValue: 2100, distance: "0.9 miles", distanceValue: 0.9, experience: "15 years", specialties: ["Composite Decking", "Screened Porches", "Repairs"], availability: "now", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" }
+            ],
+            'roof-repair': [
+                { id: 52, name: "Roof Experts", rating: 4.7, reviews: 613000, price: "$594/repair", priceValue: 594, distance: "0.7 miles", distanceValue: 0.7, experience: "18 years", specialties: ["Leak Repair", "Shingle Replacement", "Emergency Service"], availability: "now", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" },
+                { id: 53, name: "Top Roofing Co", rating: 4.5, reviews: 45000, price: "$750/repair", priceValue: 750, distance: "1.4 miles", distanceValue: 1.4, experience: "14 years", specialties: ["Metal Roofing", "Tile Repair", "Gutters"], availability: "today", photoId: "1472099645-e36c4e4a70f6" },
+                { id: 54, name: "Reliable Roofers", rating: 4.8, reviews: 28000, price: "$520/repair", priceValue: 520, distance: "2.0 miles", distanceValue: 2.0, experience: "11 years", specialties: ["Flat Roofs", "Storm Damage", "Inspections"], availability: "tomorrow", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" }
+            ],
+            'fence-repair': [
+                { id: 55, name: "Fence Fix Pro", rating: 4.2, reviews: 4800, price: "$380/repair", priceValue: 380, distance: "1.1 miles", distanceValue: 1.1, experience: "8 years", specialties: ["Wood Fencing", "Chain Link", "Gate Repair"], availability: "today", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 56, name: "Boundary Solutions", rating: 4.0, reviews: 3200, price: "$450/repair", priceValue: 450, distance: "1.8 miles", distanceValue: 1.8, experience: "6 years", specialties: ["Vinyl Fencing", "Privacy Fences", "Post Replacement"], availability: "now", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" },
+                { id: 57, name: "Secure Fencing", rating: 4.4, reviews: 5600, price: "$320/repair", priceValue: 320, distance: "0.6 miles", distanceValue: 0.6, experience: "10 years", specialties: ["Security Fencing", "Commercial", "Residential"], availability: "tomorrow", photoId: "1472099645-e36c4e4a70f6" }
+            ],
+            'appliance-repair': [
+                { id: 58, name: "Appliance Doctor", rating: 4.7, reviews: 274000, price: "$264/repair", priceValue: 264, distance: "0.8 miles", distanceValue: 0.8, experience: "12 years", specialties: ["Refrigerators", "Washers", "Dryers"], availability: "now", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" },
+                { id: 59, name: "Fix-It Fast", rating: 4.5, reviews: 156000, price: "$295/repair", priceValue: 295, distance: "1.3 miles", distanceValue: 1.3, experience: "9 years", specialties: ["Dishwashers", "Ovens", "Microwaves"], availability: "today", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" },
+                { id: 60, name: "Home Appliance Pro", rating: 4.6, reviews: 89000, price: "$240/repair", priceValue: 240, distance: "1.9 miles", distanceValue: 1.9, experience: "7 years", specialties: ["Air Conditioners", "Water Heaters", "Garbage Disposals"], availability: "tomorrow", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" }
+            ],
+            'pest-control': [
+                { id: 61, name: "Bug Busters", rating: 4.8, reviews: 317000, price: "$186/treatment", priceValue: 186, distance: "1.0 miles", distanceValue: 1.0, experience: "15 years", specialties: ["Termites", "Ants", "Roaches"], availability: "now", photoId: "1472099645-e36c4e4a70f6" },
+                { id: 62, name: "Pest Away Services", rating: 4.6, reviews: 245000, price: "$210/treatment", priceValue: 210, distance: "1.6 miles", distanceValue: 1.6, experience: "11 years", specialties: ["Rodents", "Bed Bugs", "Mosquitoes"], availability: "today", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" },
+                { id: 63, name: "Eco Pest Control", rating: 4.7, reviews: 178000, price: "$165/treatment", priceValue: 165, distance: "0.5 miles", distanceValue: 0.5, experience: "8 years", specialties: ["Eco-Friendly", "Spiders", "Wasps"], availability: "tomorrow", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c" }
+            ],
+            'gutter-services': [
+                { id: 64, name: "Gutter Guard Pro", rating: 4.0, reviews: 427000, price: "$575/service", priceValue: 575, distance: "1.4 miles", distanceValue: 1.4, experience: "13 years", specialties: ["Gutter Cleaning", "Guard Installation", "Repairs"], availability: "today", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610" },
+                { id: 65, name: "Clean Gutters Co", rating: 4.2, reviews: 298000, price: "$495/service", priceValue: 495, distance: "0.9 miles", distanceValue: 0.9, experience: "10 years", specialties: ["Pressure Washing", "Downspout Repair", "Leaf Guards"], availability: "now", photoId: "1472099645-e36c4e4a70f6" },
+                { id: 66, name: "Gutter Solutions", rating: 4.1, reviews: 356000, price: "$625/service", priceValue: 625, distance: "2.2 miles", distanceValue: 2.2, experience: "16 years", specialties: ["Seamless Gutters", "Commercial", "Emergency Service"], availability: "tomorrow", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65" }
+            ]
+        };
+
+        let currentService = '';
+        let selectedProvider = null;
+        let currentProviders = [];
+        let filteredProviders = [];
+        let bookingHistory = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupOfflineHandling();
+            updateUserPoints();
+        });
+
+        function initializeApp() {
+            // Check if user has selected type before
+            const savedUserType = localStorage.getItem('userType');
+            if (savedUserType) {
+                currentUserType = savedUserType;
+                if (savedUserType === 'customer') {
+                    showCustomerView();
+                } else {
+                    showProviderDashboard();
+                }
+            } else {
+                showUserType();
+            }
+        }
+
+        function setupOfflineHandling() {
+            window.addEventListener('online', function() {
+                isOnline = true;
+                document.getElementById('offline-indicator').classList.remove('show');
+                syncOfflineData();
+            });
+
+            window.addEventListener('offline', function() {
+                isOnline = false;
+                document.getElementById('offline-indicator').classList.add('show');
+            });
+
+            // Initial check
+            if (!isOnline) {
+                document.getElementById('offline-indicator').classList.add('show');
+            }
+        }
+
+        function syncOfflineData() {
+            // Sync any offline bookings or data when back online
+            if (offlineData.bookings && offlineData.bookings.length > 0) {
+                // In a real app, this would sync with server
+                console.log('Syncing offline bookings:', offlineData.bookings);
+                offlineData.bookings = [];
+                localStorage.setItem('offlineData', JSON.stringify(offlineData));
+            }
+        }
+
+        function toggleLanguageDropdown() {
+            const dropdown = document.getElementById('language-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function selectLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('language', currentLanguage);
+            
+            // Update the display text
+            const languageNames = {
+                'kp': 'Kpelle',
+                'bs': 'Bassa', 
+                'simple': 'Simple English'
+            };
+            
+            document.getElementById('current-language').textContent = languageNames[lang];
+            
+            updateTranslations();
+        }
+
+        function closeLanguageDropdown() {
+            document.getElementById('language-dropdown').classList.add('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('language-dropdown');
+            const button = event.target.closest('[onclick="toggleLanguageDropdown()"]');
+            
+            if (!button && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        function updateTranslations() {
+            const elements = document.querySelectorAll('[data-translate]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    element.textContent = translations[currentLanguage][key];
+                }
+            });
+
+            // Update placeholders
+            const placeholderElements = document.querySelectorAll('[data-translate-placeholder]');
+            placeholderElements.forEach(element => {
+                const key = element.getAttribute('data-translate-placeholder');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    element.placeholder = translations[currentLanguage][key];
+                }
+            });
+        }
+
+        function selectUserType(type) {
+            currentUserType = type;
+            localStorage.setItem('userType', type);
+            
+            if (type === 'customer') {
+                showCustomerView();
+            } else {
+                showProviderRegistration();
+            }
+        }
+
+        function showUserType() {
+            closeLanguageDropdown();
+            hideAllSections();
+            document.getElementById('user-type-section').classList.remove('hidden');
+        }
+
+        function showCustomerView() {
+            closeLanguageDropdown();
+            hideAllSections();
+            document.getElementById('hero-section').classList.remove('hidden');
+            document.getElementById('categories-section').classList.remove('hidden');
+        }
+
+        function showProviderDashboard() {
+            closeLanguageDropdown();
+            hideAllSections();
+            document.getElementById('provider-dashboard').classList.remove('hidden');
+        }
+
+        function showProviderRegistration() {
+            closeLanguageDropdown();
+            hideAllSections();
+            document.getElementById('provider-registration').classList.remove('hidden');
+        }
+
+        function hideAllSections() {
+            const sections = [
+                'user-type-section', 'hero-section', 'categories-section', 
+                'providers-section', 'booking-history-section', 'provider-dashboard', 'provider-registration'
+            ];
+            sections.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.classList.add('hidden');
+            });
+        }
+
+        function submitProviderRegistration(event) {
+            event.preventDefault();
+            
+            // Collect all form data
+            const formData = {
+                // Personal Information
+                name: document.getElementById('provider-name').value,
+                phone: document.getElementById('provider-phone').value,
+                email: document.getElementById('provider-email').value,
+                age: document.getElementById('provider-age').value,
+                
+                // Location
+                location: document.getElementById('provider-location').value,
+                address: document.getElementById('provider-address').value,
+                serviceAreas: Array.from(document.querySelectorAll('input[name="service-area"]:checked')).map(cb => cb.value),
+                
+                // Service Information
+                primaryService: document.getElementById('primary-service').value,
+                experience: document.getElementById('experience-years').value,
+                rate: document.getElementById('provider-rate').value,
+                rateType: document.getElementById('rate-type').value,
+                skills: document.getElementById('provider-skills').value,
+                
+                // Availability
+                workingDays: Array.from(document.querySelectorAll('input[name="working-days"]:checked')).map(cb => cb.value),
+                workStart: document.getElementById('work-start').value,
+                workEnd: document.getElementById('work-end').value,
+                emergencyAvailable: document.getElementById('emergency-available').checked,
+                
+                // Additional Information
+                hasTools: document.querySelector('input[name="has-tools"]:checked')?.value,
+                hasTransport: document.querySelector('input[name="has-transport"]:checked')?.value,
+                workExperience: document.getElementById('work-experience').value,
+                motivation: document.getElementById('motivation').value
+            };
+            
+            // Validate required fields
+            if (!formData.name || !formData.phone || !formData.location || !formData.primaryService || 
+                !formData.experience || !formData.rate || formData.serviceAreas.length === 0 || 
+                formData.workingDays.length === 0 || !formData.workStart || !formData.workEnd ||
+                !formData.hasTools || !formData.hasTransport) {
+                alert('Please fill in all required fields marked with *');
+                return;
+            }
+            
+            // Format WhatsApp message
+            const message = `🚀 *NEW PROVIDER APPLICATION*
+
+👤 *PERSONAL INFORMATION*
+• Name: ${formData.name}
+• Phone: ${formData.phone}
+• Email: ${formData.email || 'Not provided'}
+• Age: ${formData.age || 'Not provided'}
+
+📍 *LOCATION & SERVICE AREA*
+• Current Location: ${formData.location}
+• Address: ${formData.address || 'Not provided'}
+• Service Areas: ${formData.serviceAreas.join(', ')}
+
+🛠️ *SERVICE INFORMATION*
+• Primary Service: ${formData.primaryService}
+• Experience: ${formData.experience}
+• Rate: $${formData.rate} ${formData.rateType}
+• Skills: ${formData.skills || 'Not provided'}
+
+⏰ *AVAILABILITY*
+• Working Days: ${formData.workingDays.join(', ')}
+• Working Hours: ${formData.workStart} - ${formData.workEnd}
+• Emergency Available: ${formData.emergencyAvailable ? 'Yes' : 'No'}
+
+🔧 *ADDITIONAL INFO*
+• Has Tools: ${formData.hasTools}
+• Transportation: ${formData.hasTransport}
+• Work Experience: ${formData.workExperience || 'Not provided'}
+• Motivation: ${formData.motivation || 'Not provided'}
+
+---
+*Application submitted on: ${new Date().toLocaleDateString()}*
+
+Please review and contact the applicant for next steps.`;
+
+            // Send to WhatsApp
+            const whatsappNumber = "231776966080";
+            const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            
+            try {
+                const newWindow = window.open(whatsappURL, '_blank', 'noopener,noreferrer');
+                if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                    window.location.href = whatsappURL;
+                }
+            } catch (error) {
+                window.location.href = whatsappURL;
+            }
+            
+            // Show success message
+            showNotification('🎉 Application submitted successfully! We will contact you within 24 hours.', 'success');
+            
+            // Add reward points for completing application
+            addPoints(100, 'Provider application submitted');
+            
+            // Reset form and go back to user type selection
+            setTimeout(() => {
+                document.querySelector('#provider-registration form').reset();
+                showUserType();
+            }, 2000);
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function showRewards() {
+            alert(`🎁 Your Rewards:\n\n💰 Points: ${userPoints}\n🎯 Next Reward: 500 points = $10 credit\n\n📢 Refer friends to earn more points!\n• Friend signs up: +50 points\n• Friend books service: +100 points\n• You book service: +25 points`);
+        }
+
+        function updateUserPoints() {
+            document.getElementById('user-points').textContent = userPoints;
+        }
+
+        function addPoints(points, reason) {
+            userPoints += points;
+            localStorage.setItem('userPoints', userPoints.toString());
+            updateUserPoints();
+            
+            // Show reward notification
+            showNotification(`🎁 +${points} points earned! ${reason}`, 'success');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' : 
+                type === 'error' ? 'bg-red-500 text-white' : 
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        function showReferral() {
+            const referralCode = 'SH' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            const message = `🎁 Join ServiceHub with my code: ${referralCode}\n\nGet $5 credit when you sign up!\n\nDownload: servicehub.lr`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Join ServiceHub',
+                    text: message,
+                    url: 'https://servicehub.lr'
+                });
+            } else {
+                // Fallback for browsers without Web Share API
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(message);
+                    showNotification('Referral message copied to clipboard!', 'success');
+                } else {
+                    alert(`Share this message:\n\n${message}`);
+                }
+            }
+        }
+
+
+
+        function showJobRequests() {
+            alert('📋 Job Requests\n\n• New plumbing job in Sinkor - $75\n• Cleaning service in Congo Town - $50\n• Electrical repair in Paynesville - $80\n\nTap to accept jobs and start earning!');
+        }
+
+        function showWithdrawal() {
+            alert('💰 Withdraw Earnings\n\nAvailable: $1,250\n\nWithdraw to:\n• Orange Money\n• LoneStar Cash\n• Bank Account\n\nMinimum withdrawal: $20');
+        }
+
+        function showProviderProfile() {
+            alert('👤 Provider Profile\n\n• Upload ID for verification\n• Add your skills & certifications\n• Set your service areas\n• Upload portfolio photos\n• Set your rates\n\nComplete profile = More bookings!');
+        }
+
+        function openPaymentModal() {
+            document.getElementById('payment-modal').classList.remove('hidden');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+            selectedPaymentMethod = null;
+        }
+
+        function selectPayment(method) {
+            selectedPaymentMethod = method;
+            // Visual feedback
+            document.querySelectorAll('#payment-modal .border').forEach(el => {
+                el.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+            event.currentTarget.classList.add('border-blue-500', 'bg-blue-50');
+        }
+
+        function processPayment() {
+            if (!selectedPaymentMethod) {
+                alert('Please select a payment method');
+                return;
+            }
+
+            closePaymentModal();
+            
+            switch (selectedPaymentMethod) {
+                case 'orange':
+                    alert('🍊 Orange Money Payment\n\nRedirecting to Orange Money...\nEnter your PIN to complete payment.');
+                    break;
+                case 'lonestar':
+                    alert('⭐ LoneStar Cash Payment\n\nRedirecting to LoneStar Cash...\nEnter your PIN to complete payment.');
+                    break;
+                case 'cash':
+                    alert('💵 Cash Payment Selected\n\nYou will pay the provider directly after service completion.\nBooking confirmed!');
+                    break;
+                case 'wallet':
+                    alert('💜 ServiceHub Wallet\n\nPayment successful!\nRemaining balance: $15.50');
+                    break;
+            }
+            
+            // Complete the booking process with payment info
+            completeBookingWithPayment();
+        }
+
+        function findServices() {
+            const location = document.getElementById('location-input').value;
+            if (!location.trim()) {
+                alert('Please enter your location first!');
+                return;
+            }
+            
+            // Show all categories after location is entered
+            document.getElementById('categories-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function selectService(serviceType) {
+            currentService = serviceType;
+            const location = document.getElementById('location-input').value;
+            
+            // If no location entered, set a default one
+            if (!location.trim()) {
+                document.getElementById('location-input').value = 'Your Area';
+            }
+
+            showProviders(serviceType);
+        }
+
+        function showProviders(serviceType) {
+            currentProviders = serviceProviders[serviceType] || [];
+            filteredProviders = [...currentProviders];
+            const serviceTypeElement = document.getElementById('service-type');
+            
+            // Update service type display
+            serviceTypeElement.textContent = serviceType.charAt(0).toUpperCase() + serviceType.slice(1) + 's';
+            
+            // Render providers
+            renderProviders(filteredProviders);
+            updateResultsCount();
+            
+            // Show providers section and hide categories
+            document.getElementById('categories-section').classList.add('hidden');
+            document.getElementById('providers-section').classList.remove('hidden');
+            document.getElementById('providers-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderProviders(providers) {
+            const providersGrid = document.getElementById('providers-grid');
+            providersGrid.innerHTML = '';
+            
+            providers.forEach(provider => {
+                const providerCard = document.createElement('div');
+                providerCard.className = 'provider-card bg-white rounded-xl shadow-md p-6 cursor-pointer';
+                providerCard.onclick = (e) => {
+                    // Only open profile if clicking on the card, not the button
+                    if (!e.target.closest('button')) {
+                        openProviderProfile(provider.id);
+                    }
+                };
+                
+                const availabilityIcon = provider.availability === 'now' ? '🟢' : 
+                                       provider.availability === 'today' ? '🟡' : '🔵';
+                const availabilityText = provider.availability === 'now' ? 'Available Now' : 
+                                       provider.availability === 'today' ? 'Available Today' : 'Available Tomorrow';
+
+                providerCard.innerHTML = `
+                    <div class="flex items-start space-x-4 mb-4">
+                        <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-${provider.photoId}?w=64&h=64&fit=crop&crop=face" 
+                                 alt="${provider.name}" 
+                                 class="w-full h-full object-cover"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <span class="hidden w-full h-full flex items-center justify-center">${provider.name.charAt(0)}</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-900">${provider.name}</h4>
+                                    <p class="text-gray-600">${provider.experience} experience</p>
+                                    <div class="flex items-center space-x-1 mt-1">
+                                        <span>${availabilityIcon}</span>
+                                        <span class="text-sm text-gray-600">${availabilityText}</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="flex items-center space-x-1 mb-1">
+                                        <span class="text-yellow-400">★</span>
+                                        <span class="font-semibold">${provider.rating}</span>
+                                        <span class="text-gray-500 text-sm">(${provider.reviews})</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600">${provider.distance}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="flex flex-wrap gap-2">
+                            ${provider.specialties.map(specialty => 
+                                `<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">${specialty}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-xl font-bold text-green-600">${provider.price}</span>
+                        <button onclick="event.stopPropagation(); openBookingModal(${provider.id});" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">
+                            Book Now
+                        </button>
+                    </div>
+                `;
+                
+                providersGrid.appendChild(providerCard);
+            });
+        }
+
+        function showCategories() {
+            document.getElementById('providers-section').classList.add('hidden');
+            document.getElementById('booking-history-section').classList.add('hidden');
+            document.getElementById('categories-section').classList.remove('hidden');
+            document.getElementById('categories-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showBookingHistory() {
+            closeLanguageDropdown();
+            // Hide other sections
+            document.getElementById('categories-section').classList.add('hidden');
+            document.getElementById('providers-section').classList.add('hidden');
+            
+            // Show booking history section
+            document.getElementById('booking-history-section').classList.remove('hidden');
+            document.getElementById('booking-history-section').scrollIntoView({ behavior: 'smooth' });
+            
+            renderBookingHistory();
+        }
+
+        function renderBookingHistory() {
+            const historyList = document.getElementById('booking-history-list');
+            const noBookings = document.getElementById('no-bookings');
+            
+            // Reload booking history from localStorage to ensure we have latest data
+            bookingHistory = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
+            
+            if (bookingHistory.length === 0) {
+                historyList.classList.add('hidden');
+                noBookings.classList.remove('hidden');
+                return;
+            }
+            
+            historyList.classList.remove('hidden');
+            noBookings.classList.add('hidden');
+            historyList.innerHTML = '';
+            
+            // Sort bookings by date (newest first)
+            const sortedBookings = [...bookingHistory].sort((a, b) => new Date(b.bookedAt) - new Date(a.bookedAt));
+            
+            sortedBookings.forEach(booking => {
+                const bookingCard = document.createElement('div');
+                bookingCard.className = 'bg-white rounded-xl shadow-md p-6';
+                
+                const statusColor = booking.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                  booking.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
+                                  booking.status === 'Completed' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-red-100 text-red-800';
+                
+                const bookedDate = new Date(booking.bookedAt).toLocaleDateString();
+                const timeText = booking.time === 'morning' ? 'Morning (8AM - 12PM)' :
+                               booking.time === 'afternoon' ? 'Afternoon (12PM - 5PM)' :
+                               'Evening (5PM - 8PM)';
+                
+                bookingCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold overflow-hidden flex-shrink-0">
+                                <img src="https://images.unsplash.com/photo-${booking.provider.photoId}?w=48&h=48&fit=crop&crop=face" 
+                                     alt="${booking.provider.name}" 
+                                     class="w-full h-full object-cover"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <span class="hidden w-full h-full flex items-center justify-center">${booking.provider.name.charAt(0)}</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg text-gray-900">${booking.provider.name}</h4>
+                                <p class="text-gray-600 capitalize">${booking.service} Service</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${statusColor}">
+                            ${booking.status}
+                        </span>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Scheduled Date & Time</p>
+                            <p class="font-medium">${booking.date} • ${timeText}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Rate</p>
+                            <p class="font-medium text-green-600">${booking.provider.price}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Your Phone</p>
+                            <p class="font-medium">${booking.customerPhone}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Booked On</p>
+                            <p class="font-medium">${bookedDate}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-500 mb-1">Work Description</p>
+                        <p class="text-gray-700">${booking.description}</p>
+                    </div>
+                    
+                    <div class="flex justify-between items-center pt-4 border-t">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-yellow-400">★</span>
+                            <span class="font-medium">${booking.provider.rating}</span>
+                            <span class="text-gray-500 text-sm">(${booking.provider.reviews} reviews)</span>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button onclick="contactProvider('${booking.provider.name}', '${booking.service}', '${booking.id}')" class="text-blue-600 hover:text-blue-800 font-medium">
+                                Contact Provider
+                            </button>
+                            ${booking.status === 'Completed' ? 
+                                `<button onclick="rateService(${booking.id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">
+                                    Rate Service
+                                </button>` : ''
+                            }
+                        </div>
+                    </div>
+                `;
+                
+                historyList.appendChild(bookingCard);
+            });
+        }
+
+        function contactProvider(providerName, serviceType, bookingId) {
+            const booking = bookingHistory.find(b => b.id == bookingId);
+            if (!booking) {
+                alert('Booking not found. Please try again.');
+                return;
+            }
+            
+            const timeText = booking.time === 'morning' ? 'Morning (8AM - 12PM)' :
+                           booking.time === 'afternoon' ? 'Afternoon (12PM - 5PM)' :
+                           'Evening (5PM - 8PM)';
+            
+            const message = `Hi ${providerName}! 
+
+I have a booking with you for ${serviceType} service scheduled for ${booking.date} (${timeText}).
+
+Booking details:
+${booking.description}
+
+My contact number: ${booking.customerPhone}
+
+Please let me know if you need any additional information or if there are any changes to the schedule.
+
+Thank you!`;
+
+            // Use the provider's actual contact or the main ServiceHub number
+            const whatsappNumber = "231776966080";
+            const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            
+            // Multiple fallback methods to ensure WhatsApp opens
+            try {
+                // Try opening in new window first
+                const newWindow = window.open(whatsappURL, '_blank', 'noopener,noreferrer');
+                
+                // Check if popup was blocked
+                setTimeout(() => {
+                    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                        // Fallback: direct navigation
+                        window.location.href = whatsappURL;
+                    }
+                }, 100);
+                
+            } catch (error) {
+                // Final fallback
+                window.location.href = whatsappURL;
+            }
+            
+            // Show confirmation message
+            showNotification('📱 Opening WhatsApp to contact provider...', 'success');
+        }
+
+        function rateService(bookingId) {
+            // Simple rating system - in a real app this would be more sophisticated
+            const rating = prompt("Rate this service (1-5 stars):");
+            if (rating && rating >= 1 && rating <= 5) {
+                alert(`Thank you for rating this service ${rating} stars!`);
+                // In a real app, this would send the rating to a server
+            }
+        }
+
+        function openProviderProfile(providerId) {
+            // Find provider by ID from current filtered providers
+            const provider = filteredProviders.find(p => p.id === providerId) || 
+                           currentProviders.find(p => p.id === providerId);
+            
+            if (!provider) return;
+            
+            selectedProvider = provider;
+            const profileContent = document.getElementById('provider-profile-content');
+            
+            const availabilityIcon = provider.availability === 'now' ? '🟢' : 
+                                   provider.availability === 'today' ? '🟡' : '🔵';
+            const availabilityText = provider.availability === 'now' ? 'Available Now' : 
+                                   provider.availability === 'today' ? 'Available Today' : 'Available Tomorrow';
+
+            // Generate portfolio gallery
+            const portfolioGallery = provider.portfolio ? provider.portfolio.map((photoId, index) => `
+                <div class="relative group cursor-pointer" onclick="openImageModal('${photoId}', ${index})">
+                    <img src="https://images.unsplash.com/photo-${photoId}?w=300&h=200&fit=crop" 
+                         alt="Work sample ${index + 1}" 
+                         class="w-full h-48 object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMjUgNzVIMTc1VjEyNUgxMjVWNzVaIiBmaWxsPSIjOUI5QkEwIi8+Cjwvdmc+';">
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
+                        <span class="text-white opacity-0 group-hover:opacity-100 transition-opacity">🔍 View</span>
+                    </div>
+                </div>
+            `).join('') : '<p class="text-gray-500 text-center py-8">No portfolio images available</p>';
+
+            profileContent.innerHTML = `
+                <!-- Provider Header -->
+                <div class="flex flex-col md:flex-row gap-6 mb-8">
+                    <div class="flex-shrink-0">
+                        <div class="w-32 h-32 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-4xl overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-${provider.photoId}?w=128&h=128&fit=crop&crop=face" 
+                                 alt="${provider.name}" 
+                                 class="w-full h-full object-cover"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <span class="hidden w-full h-full flex items-center justify-center">${provider.name.charAt(0)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                            <div>
+                                <h2 class="text-3xl font-bold text-gray-900 mb-2">${provider.name}</h2>
+                                <div class="flex items-center space-x-4 mb-3">
+                                    <div class="flex items-center space-x-1">
+                                        <span class="text-yellow-400 text-lg">★</span>
+                                        <span class="font-semibold text-lg">${provider.rating}</span>
+                                        <span class="text-gray-500">(${provider.reviews} reviews)</span>
+                                    </div>
+                                    <span class="text-gray-300">•</span>
+                                    <span class="text-gray-600">${provider.experience} experience</span>
+                                </div>
+                                <div class="flex items-center space-x-2 mb-4">
+                                    <span>${availabilityIcon}</span>
+                                    <span class="font-medium text-gray-700">${availabilityText}</span>
+                                    <span class="text-gray-300">•</span>
+                                    <span class="text-gray-600">${provider.distance}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="text-right">
+                                <div class="text-3xl font-bold text-green-600 mb-2">${provider.price}</div>
+                                ${provider.vehicle ? `<p class="text-sm text-gray-600 mb-2">🚗 ${provider.vehicle}</p>` : ''}
+                            </div>
+                        </div>
+                        
+                        <!-- Bio -->
+                        <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                            <p class="text-gray-700 leading-relaxed">${provider.bio || 'Professional service provider with years of experience.'}</p>
+                        </div>
+                        
+                        <!-- Specialties -->
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-900 mb-2">Specialties</h4>
+                            <div class="flex flex-wrap gap-2">
+                                ${provider.specialties.map(specialty => 
+                                    `<span class="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">${specialty}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Info Grid -->
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    ${provider.certifications ? `
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <span class="mr-2">🏆</span>
+                            Certifications & Licenses
+                        </h4>
+                        <ul class="space-y-2">
+                            ${provider.certifications.map(cert => 
+                                `<li class="flex items-center text-gray-700">
+                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                                    ${cert}
+                                </li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                    
+                    ${provider.languages ? `
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <span class="mr-2">🗣️</span>
+                            Languages
+                        </h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${provider.languages.map(lang => 
+                                `<span class="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">${lang}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <!-- Portfolio Section -->
+                <div class="mb-8">
+                    <h4 class="font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="mr-2">📸</span>
+                        Work Portfolio
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        ${portfolioGallery}
+                    </div>
+                </div>
+                
+                <!-- Reviews Section -->
+                <div class="mb-8">
+                    <h4 class="font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="mr-2">⭐</span>
+                        Recent Reviews
+                    </h4>
+                    <div class="space-y-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-medium text-gray-900">John D.</span>
+                                    <div class="flex text-yellow-400">★★★★★</div>
+                                </div>
+                                <span class="text-sm text-gray-500">2 days ago</span>
+                            </div>
+                            <p class="text-gray-700">"Excellent service! Very professional and completed the work quickly. Highly recommended!"</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-medium text-gray-900">Mary K.</span>
+                                    <div class="flex text-yellow-400">★★★★★</div>
+                                </div>
+                                <span class="text-sm text-gray-500">1 week ago</span>
+                            </div>
+                            <p class="text-gray-700">"Great communication and fair pricing. Will definitely use again!"</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-medium text-gray-900">Robert S.</span>
+                                    <div class="flex text-yellow-400">★★★★☆</div>
+                                </div>
+                                <span class="text-sm text-gray-500">2 weeks ago</span>
+                            </div>
+                            <p class="text-gray-700">"Good work overall. Arrived on time and got the job done efficiently."</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Book Now Section -->
+                <div class="sticky bottom-0 bg-white border-t pt-6">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button onclick="contactProviderDirect('${provider.name}', '${currentService}')" class="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 font-medium flex items-center justify-center">
+                            <span class="mr-2">💬</span>
+                            Contact Provider
+                        </button>
+                        <button onclick="closeProviderProfile(); openBookingModal(${provider.id});" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium flex items-center justify-center">
+                            <span class="mr-2">📅</span>
+                            Book Now - ${provider.price}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('provider-profile-modal').classList.remove('hidden');
+        }
+
+        function closeProviderProfile() {
+            document.getElementById('provider-profile-modal').classList.add('hidden');
+        }
+
+        function openImageModal(photoId, index) {
+            // Simple image viewer - in a real app this would be more sophisticated
+            const imageUrl = `https://images.unsplash.com/photo-${photoId}?w=800&h=600&fit=crop`;
+            const newWindow = window.open('', '_blank', 'width=800,height=600');
+            newWindow.document.write(`
+                <html>
+                    <head><title>Portfolio Image</title></head>
+                    <body style="margin:0; background:#000; display:flex; align-items:center; justify-content:center;">
+                        <img src="${imageUrl}" style="max-width:100%; max-height:100%; object-fit:contain;" alt="Portfolio image">
+                    </body>
+                </html>
+            `);
+        }
+
+        function contactProviderDirect(providerName, serviceType) {
+            const message = `Hi ${providerName}! 
+
+I'm interested in your ${serviceType} services. I found your profile on ServiceHub and would like to discuss my requirements.
+
+Could you please let me know your availability and provide more details about your services?
+
+Thank you!`;
+
+            const whatsappNumber = "231776966080";
+            const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            
+            // Multiple fallback methods to ensure WhatsApp opens
+            try {
+                // Try opening in new window first
+                const newWindow = window.open(whatsappURL, '_blank', 'noopener,noreferrer');
+                
+                // Check if popup was blocked after a short delay
+                setTimeout(() => {
+                    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                        // Fallback: direct navigation
+                        window.location.href = whatsappURL;
+                    }
+                }, 100);
+                
+            } catch (error) {
+                // Final fallback
+                window.location.href = whatsappURL;
+            }
+            
+            // Show confirmation message
+            showNotification('📱 Opening WhatsApp to contact provider...', 'success');
+        }
+
+        function openBookingModal(providerId) {
+            // Find provider by ID from current filtered providers
+            const provider = filteredProviders.find(p => p.id === providerId) || 
+                           currentProviders.find(p => p.id === providerId);
+            
+            if (!provider) return;
+            
+            selectedProvider = provider;
+            const providerDetails = document.getElementById('provider-details');
+            
+            providerDetails.innerHTML = `
+                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl overflow-hidden flex-shrink-0">
+                        <img src="https://images.unsplash.com/photo-${provider.photoId}?w=64&h=64&fit=crop&crop=face" 
+                             alt="${provider.name}" 
+                             class="w-full h-full object-cover"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <span class="hidden w-full h-full flex items-center justify-center">${provider.name.charAt(0)}</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg">${provider.name}</h4>
+                        <div class="flex items-center space-x-2 text-sm text-gray-600">
+                            <span class="flex items-center">
+                                <span class="text-yellow-400 mr-1">★</span>
+                                ${provider.rating} (${provider.reviews} reviews)
+                            </span>
+                            <span>•</span>
+                            <span>${provider.price}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('booking-modal').classList.remove('hidden');
+        }
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').classList.add('hidden');
+            selectedProvider = null;
+        }
+
+        function submitBooking(event) {
+            event.preventDefault();
+            
+            // Get form data
+            const customerPhone = document.getElementById('customer-phone').value;
+            const bookingDate = document.getElementById('booking-date').value;
+            const bookingTime = document.getElementById('booking-time').value;
+            const workDescription = document.getElementById('work-description').value;
+            
+            // Store booking data temporarily
+            window.tempBookingData = {
+                customerPhone,
+                bookingDate,
+                bookingTime,
+                workDescription
+            };
+            
+            // Close booking modal and open payment modal
+            closeBookingModal();
+            openPaymentModal();
+        }
+
+        function completeBookingWithPayment() {
+            const bookingData = window.tempBookingData;
+            if (!bookingData) return;
+            
+            // Format the WhatsApp message
+            const paymentMethodText = selectedPaymentMethod === 'orange' ? 'Orange Money' :
+                                    selectedPaymentMethod === 'lonestar' ? 'LoneStar Cash' :
+                                    selectedPaymentMethod === 'cash' ? 'Cash (Pay after service)' :
+                                    'ServiceHub Wallet';
+            
+            const message = `🔧 *NEW SERVICE BOOKING REQUEST*
+
+👤 *Provider:* ${selectedProvider.name}
+🛠️ *Service:* ${currentService.charAt(0).toUpperCase() + currentService.slice(1)}
+💰 *Rate:* ${selectedProvider.price}
+⭐ *Rating:* ${selectedProvider.rating}/5 (${selectedProvider.reviews} reviews)
+
+📅 *Preferred Date:* ${bookingData.bookingDate}
+⏰ *Preferred Time:* ${bookingData.bookingTime}
+📱 *Customer Phone:* ${bookingData.customerPhone}
+💳 *Payment Method:* ${paymentMethodText}
+
+📝 *Work Description:*
+${bookingData.workDescription}
+
+Please confirm this booking and coordinate directly with the customer.`;
+
+            // Your WhatsApp number
+            const whatsappNumber = "231776966080";
+            
+            // Create WhatsApp URL
+            const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            
+            // Try multiple methods to ensure WhatsApp opens
+            try {
+                const newWindow = window.open(whatsappURL, '_blank', 'noopener,noreferrer');
+                if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                    window.location.href = whatsappURL;
+                }
+            } catch (error) {
+                window.location.href = whatsappURL;
+            }
+            
+            // Save booking to history
+            const booking = {
+                id: Date.now(),
+                provider: selectedProvider,
+                service: currentService,
+                customerPhone: bookingData.customerPhone,
+                date: bookingData.bookingDate,
+                time: bookingData.bookingTime,
+                description: bookingData.workDescription,
+                paymentMethod: selectedPaymentMethod,
+                status: 'Pending',
+                bookedAt: new Date().toISOString()
+            };
+            
+            bookingHistory.unshift(booking);
+            localStorage.setItem('bookingHistory', JSON.stringify(bookingHistory));
+            
+            // Clean up temp data
+            delete window.tempBookingData;
+            
+            // Show success notification
+            showNotification('🎉 Booking confirmed! Provider will contact you soon.', 'success');
+            
+            // Add reward points
+            addPoints(25, 'Service booking completed');
+            
+            // Show booking history option
+            setTimeout(() => {
+                if (confirm('Booking saved! Would you like to view your booking history?')) {
+                    showBookingHistory();
+                }
+            }, 1000);
+        }
+
+        function showSuccessMessage() {
+            const successMessage = document.getElementById('success-message');
+            successMessage.classList.remove('hidden');
+            
+            setTimeout(() => {
+                successMessage.classList.add('hidden');
+            }, 4000);
+        }
+
+        function toggleFilters() {
+            const filterPanel = document.getElementById('filter-panel');
+            filterPanel.classList.toggle('hidden');
+        }
+
+        function applyFilters() {
+            const ratingFilter = document.querySelector('input[name="rating-filter"]:checked').value;
+            const priceFilter = document.querySelector('input[name="price-filter"]:checked').value;
+            const distanceFilter = document.querySelector('input[name="distance-filter"]:checked').value;
+            const availabilityFilter = document.querySelector('input[name="availability-filter"]:checked').value;
+
+            filteredProviders = currentProviders.filter(provider => {
+                // Rating filter
+                if (ratingFilter && provider.rating < parseFloat(ratingFilter)) {
+                    return false;
+                }
+
+                // Price filter
+                if (priceFilter) {
+                    if (priceFilter === 'low' && provider.priceValue >= 50) return false;
+                    if (priceFilter === 'medium' && (provider.priceValue < 50 || provider.priceValue > 100)) return false;
+                    if (priceFilter === 'high' && provider.priceValue <= 100) return false;
+                }
+
+                // Distance filter
+                if (distanceFilter && provider.distanceValue > parseFloat(distanceFilter)) {
+                    return false;
+                }
+
+                // Availability filter
+                if (availabilityFilter && provider.availability !== availabilityFilter) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            renderProviders(filteredProviders);
+            updateResultsCount();
+            toggleFilters();
+        }
+
+        function clearFilters() {
+            // Reset all radio buttons to default
+            document.querySelector('input[name="rating-filter"][value=""]').checked = true;
+            document.querySelector('input[name="price-filter"][value=""]').checked = true;
+            document.querySelector('input[name="distance-filter"][value=""]').checked = true;
+            document.querySelector('input[name="availability-filter"][value=""]').checked = true;
+            
+            // Reset sort dropdown
+            document.getElementById('sort-select').value = '';
+            
+            // Show all providers
+            filteredProviders = [...currentProviders];
+            renderProviders(filteredProviders);
+            updateResultsCount();
+        }
+
+        function applySorting() {
+            const sortValue = document.getElementById('sort-select').value;
+            
+            if (!sortValue) return;
+
+            const sortedProviders = [...filteredProviders];
+
+            switch (sortValue) {
+                case 'rating':
+                    sortedProviders.sort((a, b) => b.rating - a.rating);
+                    break;
+                case 'price':
+                    sortedProviders.sort((a, b) => a.priceValue - b.priceValue);
+                    break;
+                case 'distance':
+                    sortedProviders.sort((a, b) => a.distanceValue - b.distanceValue);
+                    break;
+            }
+
+            renderProviders(sortedProviders);
+        }
+
+        function updateResultsCount() {
+            const resultsCount = document.getElementById('results-count');
+            const count = filteredProviders.length;
+            const total = currentProviders.length;
+            
+            if (count === total) {
+                resultsCount.textContent = `Showing all ${count} providers`;
+            } else {
+                resultsCount.textContent = `Showing ${count} of ${total} providers`;
+            }
+        }
+
+        // Footer link functions
+        function showHowItWorks() {
+            alert('How it works:\n\n1. Enter your location\n2. Choose a service category\n3. Browse available providers\n4. Book your preferred provider\n5. Get connected via WhatsApp');
+        }
+
+        function showSafety() {
+            alert('Safety Information:\n\n• All providers are verified\n• Read reviews from other customers\n• Direct communication through WhatsApp\n• Report any issues to our support team\n• Your safety is our priority');
+        }
+
+        function showSupport() {
+            alert('Need Support?\n\nContact us:\n📱 WhatsApp: +231 77 696 6080\n✉️ Email: support@servicehub.lr\n\nWe\'re here to help 24/7!');
+        }
+
+        function showJoinProvider() {
+            alert('Join as a Service Provider!\n\n• Grow your business\n• Connect with local customers\n• Set your own rates\n• Flexible scheduling\n\nContact us to get started:\n📱 +231 77 696 6080');
+        }
+
+        function showProviderResources() {
+            alert('Provider Resources:\n\n• Best practices guide\n• Customer service tips\n• Safety protocols\n• Marketing support\n• Training materials\n\nContact us for more information!');
+        }
+
+        function showSuccessStories() {
+            alert('Success Stories:\n\n"ServiceHub helped me grow my electrical business by 300%!" - Mike J.\n\n"I found reliable customers and steady income through the platform." - Sarah C.\n\n"The best platform for connecting with local service providers!" - Customer Review');
+        }
+
+        function showAbout() {
+            alert('About ServiceHub:\n\nWe connect customers with trusted local service providers in Liberia. Our mission is to make finding reliable services quick, easy, and safe.\n\nFounded in 2024, we\'re committed to supporting local businesses and helping communities thrive.');
+        }
+
+        function showCareers() {
+            alert('Join Our Team!\n\nWe\'re always looking for talented individuals to help us grow.\n\nCurrent opportunities:\n• Customer Support\n• Business Development\n• Marketing\n\nSend your resume to: careers@servicehub.lr');
+        }
+
+        function showContact() {
+            alert('Contact ServiceHub:\n\n📱 Phone: +231 77 696 6080\n✉️ Email: support@servicehub.lr\n📍 Location: Monrovia, Liberia\n🕒 Hours: 24/7 Support\n\nWe\'d love to hear from you!');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('booking-modal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeBookingModal();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a0635f7445b7b0',t:'MTc1OTcwMzY4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
