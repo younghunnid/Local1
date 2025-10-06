@@ -115,6 +115,10 @@
                     <div class="hidden md:flex space-x-4">
                         <button onclick="showUserType(); closeLanguageDropdown();" class="text-gray-600 hover:text-blue-600 font-medium" data-translate="find_services">Find Services</button>
                         <button onclick="showBookingHistory(); closeLanguageDropdown();" class="text-gray-600 hover:text-blue-600 font-medium" data-translate="my_bookings">My Bookings</button>
+                        <button onclick="showChat(); closeLanguageDropdown();" class="text-gray-600 hover:text-blue-600 font-medium relative">
+                            💬 Chat
+                            <span id="chat-notification" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                        </button>
                         <button onclick="showProviderRegistration(); closeLanguageDropdown();" class="text-gray-600 hover:text-blue-600 font-medium" data-translate="become_provider">Become a Provider</button>
                         
                         <!-- Language Dropdown -->
@@ -147,6 +151,10 @@
             <div id="mobile-menu" class="hidden md:hidden pb-4 space-y-2">
                 <button onclick="showUserType(); closeLanguageDropdown(); toggleMobileMenu();" class="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 rounded" data-translate="find_services">Find Services</button>
                 <button onclick="showBookingHistory(); closeLanguageDropdown(); toggleMobileMenu();" class="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 rounded" data-translate="my_bookings">My Bookings</button>
+                <button onclick="showChat(); closeLanguageDropdown(); toggleMobileMenu();" class="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 rounded relative">
+                    💬 Chat
+                    <span id="mobile-chat-notification" class="hidden absolute top-2 right-4 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                </button>
                 <button onclick="showProviderRegistration(); closeLanguageDropdown(); toggleMobileMenu();" class="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 rounded" data-translate="become_provider">Become a Provider</button>
                 
                 <!-- Mobile Language Options -->
@@ -1166,6 +1174,102 @@
             </div>
         </div>
 
+        <!-- Chat Section -->
+        <div id="chat-section" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">My Booking Chats</h3>
+                <button onclick="showCategories()" class="text-blue-600 hover:text-blue-800 font-medium">← Back to Services</button>
+            </div>
+            
+            <!-- Booking Chats List -->
+            <div id="booking-chats-list" class="space-y-4 mb-8">
+                <!-- Booking chats will be populated by JavaScript -->
+            </div>
+            
+            <!-- No Chats Message -->
+            <div id="no-chats" class="hidden text-center py-12">
+                <div class="text-6xl mb-4">💬</div>
+                <h4 class="text-xl font-semibold text-gray-900 mb-2">No Active Chats</h4>
+                <p class="text-gray-600 mb-6">Book a service to start chatting with providers and ServiceHub support.</p>
+                <button onclick="showCategories()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium">
+                    Find Services
+                </button>
+            </div>
+            
+            <!-- Chat Info -->
+            <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl p-6">
+                <h4 class="text-xl font-bold mb-4">💡 Private Booking Chats</h4>
+                <div class="grid md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p class="mb-2">✅ <strong>Features:</strong></p>
+                        <ul class="space-y-1 opacity-90">
+                            <li>• Direct chat with your provider</li>
+                            <li>• ServiceHub support included</li>
+                            <li>• Secure and private conversations</li>
+                            <li>• Real-time updates on your booking</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="mb-2">🔒 <strong>Privacy:</strong></p>
+                        <ul class="space-y-1 opacity-90">
+                            <li>• Only you, provider, and ServiceHub can see messages</li>
+                            <li>• Chat history saved for your records</li>
+                            <li>• Professional moderation</li>
+                            <li>• Report any issues instantly</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Room Modal -->
+        <div id="chat-room-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl w-full max-w-4xl h-[80vh] flex flex-col">
+                <!-- Chat Header -->
+                <div class="flex justify-between items-center p-4 border-b bg-gray-50 rounded-t-xl">
+                    <div class="flex items-center space-x-3">
+                        <div id="chat-room-icon" class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg">
+                            💬
+                        </div>
+                        <div>
+                            <h3 id="chat-room-title" class="text-lg font-bold text-gray-900">General Chat</h3>
+                            <p id="chat-room-members" class="text-sm text-gray-600">45 members online</p>
+                        </div>
+                    </div>
+                    <button onclick="closeChatRoom()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                </div>
+                
+                <!-- Chat Messages -->
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <!-- Messages will be populated by JavaScript -->
+                </div>
+                
+                <!-- Chat Input -->
+                <div class="border-t p-4 bg-gray-50 rounded-b-xl">
+                    <form onsubmit="sendMessage(event)" class="flex space-x-3">
+                        <input 
+                            type="text" 
+                            id="chat-input" 
+                            placeholder="Type your message..." 
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            maxlength="500"
+                        >
+                        <button 
+                            type="submit" 
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium flex items-center space-x-2"
+                        >
+                            <span>Send</span>
+                            <span>📤</span>
+                        </button>
+                    </form>
+                    <div class="flex justify-between items-center mt-2 text-xs text-gray-500">
+                        <span>Press Enter to send</span>
+                        <span id="char-count">0/500</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Success Message -->
         <div id="success-message" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
             <div class="flex items-center space-x-2">
@@ -1563,6 +1667,9 @@
         let currentProviders = [];
         let filteredProviders = [];
         let bookingHistory = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
+        let currentChatRoom = '';
+        let chatMessages = JSON.parse(localStorage.getItem('chatMessages') || '{}');
+        let currentUser = localStorage.getItem('chatUsername') || generateUsername();
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1707,7 +1814,7 @@
         function hideAllSections() {
             const sections = [
                 'user-type-section', 'hero-section', 'categories-section', 
-                'providers-section', 'booking-history-section', 'provider-dashboard', 'provider-registration'
+                'providers-section', 'booking-history-section', 'provider-dashboard', 'provider-registration', 'chat-section'
             ];
             sections.forEach(id => {
                 const element = document.getElementById(id);
@@ -2156,6 +2263,11 @@ Please review and contact the applicant for next steps.`;
                             <span class="text-gray-500 text-sm">(${booking.provider.reviews} reviews)</span>
                         </div>
                         <div class="flex space-x-3">
+                            ${booking.chatId ? 
+                                `<button onclick="openBookingChatFromHistory('${booking.chatId}', ${JSON.stringify(booking).replace(/"/g, '&quot;')})" class="text-green-600 hover:text-green-800 font-medium">
+                                    💬 Open Chat
+                                </button>` : ''
+                            }
                             <button onclick="contactProvider('${booking.provider.name}', '${booking.service}', '${booking.id}')" class="text-blue-600 hover:text-blue-800 font-medium">
                                 Contact Provider
                             </button>
@@ -2579,7 +2691,7 @@ Please confirm this booking and coordinate directly with the customer.`;
                 window.location.href = whatsappURL;
             }
             
-            // Save booking to history
+            // Save booking to history with chat ID
             const booking = {
                 id: Date.now(),
                 provider: selectedProvider,
@@ -2590,25 +2702,36 @@ Please confirm this booking and coordinate directly with the customer.`;
                 description: bookingData.workDescription,
                 paymentMethod: selectedPaymentMethod,
                 status: 'Pending',
-                bookedAt: new Date().toISOString()
+                bookedAt: new Date().toISOString(),
+                chatId: `booking_${Date.now()}` // Unique chat ID for private conversation
             };
             
             bookingHistory.unshift(booking);
             localStorage.setItem('bookingHistory', JSON.stringify(bookingHistory));
             
+            // Create private booking chat automatically
+            createBookingChat(booking);
+            
             // Clean up temp data
             delete window.tempBookingData;
             
-            // Show success notification
-            showNotification('🎉 Booking confirmed! Provider will contact you soon.', 'success');
+            // Show success notification with chat info
+            showNotification('🎉 Booking confirmed! Private chat created with provider and support.', 'success');
             
             // Add reward points
             addPoints(25, 'Service booking completed');
             
-            // Show booking history option
+            // Show booking confirmation with chat option
             setTimeout(() => {
-                if (confirm('Booking saved! Would you like to view your booking history?')) {
-                    showBookingHistory();
+                const userChoice = confirm('Booking saved! A private chat has been created with your provider and ServiceHub support.\n\nWould you like to open the chat now?');
+                if (userChoice) {
+                    // Open the chat directly
+                    openBookingChat(booking.chatId, booking);
+                } else {
+                    // Show booking history option
+                    if (confirm('Would you like to view your booking history instead?')) {
+                        showBookingHistory();
+                    }
                 }
             }, 1000);
         }
@@ -2751,12 +2874,367 @@ Please confirm this booking and coordinate directly with the customer.`;
             alert('Contact ServiceHub:\n\n📱 Phone: +231 77 696 6080\n✉️ Email: support@servicehub.lr\n📍 Location: Monrovia, Liberia\n🕒 Hours: 24/7 Support\n\nWe\'d love to hear from you!');
         }
 
+        // Chat Functions
+        function generateUsername() {
+            const adjectives = ['Happy', 'Smart', 'Quick', 'Bright', 'Kind', 'Cool', 'Nice', 'Good'];
+            const nouns = ['User', 'Helper', 'Friend', 'Member', 'Person', 'Customer', 'Provider'];
+            const username = adjectives[Math.floor(Math.random() * adjectives.length)] + 
+                           nouns[Math.floor(Math.random() * nouns.length)] + 
+                           Math.floor(Math.random() * 1000);
+            localStorage.setItem('chatUsername', username);
+            return username;
+        }
+
+        function createBookingChat(booking) {
+            // Initialize chat messages for this booking
+            if (!chatMessages[booking.chatId]) {
+                chatMessages[booking.chatId] = [
+                    {
+                        id: 1,
+                        user: 'ServiceHub Support',
+                        message: `Welcome to your booking chat! 🎉\n\nBooking Details:\n• Service: ${booking.service}\n• Provider: ${booking.provider.name}\n• Date: ${booking.date}\n• Time: ${booking.time}\n\nYour provider will join this chat soon to coordinate the service.`,
+                        timestamp: new Date().toISOString(),
+                        isAdmin: true
+                    }
+                ];
+                localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+            }
+        }
+
+        function showChat() {
+            closeLanguageDropdown();
+            hideAllSections();
+            document.getElementById('chat-section').classList.remove('hidden');
+            document.getElementById('chat-section').scrollIntoView({ behavior: 'smooth' });
+            
+            // Load booking chats
+            loadBookingChats();
+            
+            // Hide chat notifications
+            document.getElementById('chat-notification').classList.add('hidden');
+            document.getElementById('mobile-chat-notification').classList.add('hidden');
+        }
+
+        function loadBookingChats() {
+            const chatsList = document.getElementById('booking-chats-list');
+            const noChats = document.getElementById('no-chats');
+            
+            // Get bookings with chats
+            const bookingsWithChats = bookingHistory.filter(booking => booking.chatId);
+            
+            if (bookingsWithChats.length === 0) {
+                chatsList.classList.add('hidden');
+                noChats.classList.remove('hidden');
+                return;
+            }
+            
+            chatsList.classList.remove('hidden');
+            noChats.classList.add('hidden');
+            chatsList.innerHTML = '';
+            
+            bookingsWithChats.forEach(booking => {
+                const chatCard = document.createElement('div');
+                chatCard.className = 'bg-white rounded-xl shadow-md p-6 cursor-pointer hover:shadow-lg transition-all';
+                chatCard.onclick = () => openBookingChat(booking.chatId, booking);
+                
+                const statusColor = booking.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                  booking.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
+                                  booking.status === 'Completed' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-red-100 text-red-800';
+                
+                // Get last message preview
+                const lastMessage = getLastMessage(booking.chatId);
+                const lastMessagePreview = lastMessage ? 
+                    `${lastMessage.user}: ${lastMessage.message.substring(0, 50)}${lastMessage.message.length > 50 ? '...' : ''}` :
+                    'No messages yet';
+                
+                const unreadCount = getUnreadCount(booking.chatId);
+                
+                chatCard.innerHTML = `
+                    <div class="flex items-start space-x-4">
+                        <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-${booking.provider.photoId}?w=64&h=64&fit=crop&crop=face" 
+                                 alt="${booking.provider.name}" 
+                                 class="w-full h-full object-cover"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <span class="hidden w-full h-full flex items-center justify-center">${booking.provider.name.charAt(0)}</span>
+                        </div>
+                        
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-900">${booking.provider.name}</h4>
+                                    <p class="text-gray-600 capitalize">${booking.service} Service</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium ${statusColor}">
+                                        ${booking.status}
+                                    </span>
+                                    ${unreadCount > 0 ? `<span class="bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">${unreadCount}</span>` : ''}
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-sm text-gray-500">Scheduled: ${booking.date}</p>
+                                    <p class="text-sm text-gray-600 mt-1">${lastMessagePreview}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm text-gray-500">3 participants</p>
+                                    <p class="text-xs text-gray-400">You, Provider, Support</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                chatsList.appendChild(chatCard);
+            });
+        }
+
+        function getLastMessage(chatId) {
+            const messages = chatMessages[chatId] || [];
+            return messages.length > 0 ? messages[messages.length - 1] : null;
+        }
+
+        function getUnreadCount(chatId) {
+            // In a real app, this would track read/unread status
+            // For demo purposes, return random number for some chats
+            return Math.random() > 0.7 ? Math.floor(Math.random() * 3) + 1 : 0;
+        }
+
+        function openBookingChat(chatId, booking) {
+            currentChatRoom = chatId;
+            
+            // Set chat details
+            document.getElementById('chat-room-title').textContent = `${booking.provider.name} - ${booking.service}`;
+            document.getElementById('chat-room-members').textContent = '3 participants: You, Provider, ServiceHub Support';
+            document.getElementById('chat-room-icon').textContent = '💼';
+            document.getElementById('chat-room-icon').className = 'w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg';
+            
+            // Load messages for this booking chat
+            loadChatMessages(chatId);
+            
+            // Show modal
+            document.getElementById('chat-room-modal').classList.remove('hidden');
+            
+            // Focus input
+            setTimeout(() => {
+                document.getElementById('chat-input').focus();
+            }, 100);
+        }
+
+        function openChatRoom(roomType) {
+            // This function is now replaced by openBookingChat
+            // Keeping for backward compatibility but redirecting to booking chats
+            showChat();
+        }
+
+        function closeChatRoom() {
+            document.getElementById('chat-room-modal').classList.add('hidden');
+            currentChatRoom = '';
+        }
+
+        function loadChatMessages(chatId) {
+            const messagesContainer = document.getElementById('chat-messages');
+            
+            // Get messages for this chat
+            const messages = chatMessages[chatId] || [];
+            messagesContainer.innerHTML = '';
+            
+            messages.forEach(message => {
+                const messageElement = createMessageElement(message);
+                messagesContainer.appendChild(messageElement);
+            });
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function createMessageElement(message) {
+            const messageDiv = document.createElement('div');
+            const isOwnMessage = message.user === currentUser;
+            const timestamp = new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            let userBadge = '';
+            let messageClass = 'chat-bubble received';
+            
+            if (message.isAdmin) {
+                userBadge = '<span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-2">Admin</span>';
+            } else if (message.isProvider) {
+                userBadge = '<span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full ml-2">Provider</span>';
+            } else if (message.isCustomer) {
+                userBadge = '<span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full ml-2">Customer</span>';
+            }
+            
+            if (isOwnMessage) {
+                messageClass = 'chat-bubble sent';
+            }
+            
+            messageDiv.className = 'flex flex-col space-y-1';
+            messageDiv.innerHTML = `
+                <div class="flex items-center space-x-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}">
+                    <span class="text-sm font-medium text-gray-700">${message.user}</span>
+                    ${userBadge}
+                    <span class="text-xs text-gray-500">${timestamp}</span>
+                </div>
+                <div class="${messageClass} p-3">
+                    ${message.message}
+                </div>
+            `;
+            
+            return messageDiv;
+        }
+
+        function sendMessage(event) {
+            event.preventDefault();
+            
+            const input = document.getElementById('chat-input');
+            const messageText = input.value.trim();
+            
+            if (!messageText || !currentChatRoom) return;
+            
+            // Create new message
+            const newMessage = {
+                id: Date.now(),
+                user: currentUser,
+                message: messageText,
+                timestamp: new Date().toISOString(),
+                isCustomer: currentUserType === 'customer',
+                isProvider: currentUserType === 'provider'
+            };
+            
+            // Add to messages
+            if (!chatMessages[currentChatRoom]) {
+                chatMessages[currentChatRoom] = [];
+            }
+            
+            chatMessages[currentChatRoom].push(newMessage);
+            localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+            
+            // Add message to UI
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageElement = createMessageElement(newMessage);
+            messagesContainer.appendChild(messageElement);
+            
+            // Clear input and scroll to bottom
+            input.value = '';
+            updateCharCount();
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Simulate provider/support responses in demo
+            setTimeout(() => {
+                simulateResponse(currentChatRoom, messageText);
+            }, 2000 + Math.random() * 3000);
+        }
+
+        function simulateResponse(chatId, originalMessage) {
+            // Get the booking for this chat to determine context
+            const booking = bookingHistory.find(b => b.chatId === chatId);
+            if (!booking) return;
+            
+            // Determine who should respond (provider or support)
+            const shouldProviderRespond = Math.random() > 0.3; // 70% chance provider responds
+            
+            let responseUser, responseMessage, isAdmin = false, isProvider = false;
+            
+            if (shouldProviderRespond) {
+                responseUser = booking.provider.name;
+                isProvider = true;
+                
+                const providerResponses = [
+                    'Thanks for the message! I\'ll be there on time.',
+                    'Got it! I have all the tools needed for this job.',
+                    'Perfect! I\'ll call you 30 minutes before arrival.',
+                    'No problem! I\'ve handled similar work before.',
+                    'Sounds good! Looking forward to helping you.',
+                    'I\'ll make sure to bring everything needed.',
+                    'Thanks for choosing my services!',
+                    'I\'ll update you if there are any changes to the schedule.'
+                ];
+                
+                responseMessage = providerResponses[Math.floor(Math.random() * providerResponses.length)];
+            } else {
+                responseUser = 'ServiceHub Support';
+                isAdmin = true;
+                
+                const supportResponses = [
+                    'We\'re here to help if you need anything! 😊',
+                    'Great communication! This is how successful bookings work.',
+                    'If you have any issues, please let us know immediately.',
+                    'Both parties are doing great! Keep up the good communication.',
+                    'Remember to confirm the final details before the service date.',
+                    'We\'re monitoring this chat to ensure everything goes smoothly.',
+                    'Feel free to ask if you need any assistance!',
+                    'This booking is progressing well. Great job everyone!'
+                ];
+                
+                responseMessage = supportResponses[Math.floor(Math.random() * supportResponses.length)];
+            }
+            
+            const response = {
+                id: Date.now() + 1,
+                user: responseUser,
+                message: responseMessage,
+                timestamp: new Date().toISOString(),
+                isAdmin: isAdmin,
+                isProvider: isProvider,
+                isCustomer: false
+            };
+            
+            // Add response to messages
+            chatMessages[chatId].push(response);
+            localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+            
+            // Add to UI if chat is still open
+            if (currentChatRoom === chatId && !document.getElementById('chat-room-modal').classList.contains('hidden')) {
+                const messagesContainer = document.getElementById('chat-messages');
+                const messageElement = createMessageElement(response);
+                messagesContainer.appendChild(messageElement);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        function openBookingChatFromHistory(chatId, bookingData) {
+            // Parse the booking data (it comes as a string from the onclick)
+            const booking = typeof bookingData === 'string' ? JSON.parse(bookingData) : bookingData;
+            openBookingChat(chatId, booking);
+        }
+
+        function updateCharCount() {
+            const input = document.getElementById('chat-input');
+            const charCount = document.getElementById('char-count');
+            if (input && charCount) {
+                charCount.textContent = `${input.value.length}/500`;
+            }
+        }
+
+        // Add event listeners for chat
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) {
+                chatInput.addEventListener('input', updateCharCount);
+            }
+            
+            // Show chat notifications initially
+            setTimeout(() => {
+                document.getElementById('chat-notification').classList.remove('hidden');
+                document.getElementById('mobile-chat-notification').classList.remove('hidden');
+            }, 5000);
+        });
+
         // Close modal when clicking outside
         document.getElementById('booking-modal').addEventListener('click', function(event) {
             if (event.target === this) {
                 closeBookingModal();
             }
         });
+
+        document.getElementById('chat-room-modal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeChatRoom();
+            }
+        });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a0a46866ceb7b0',t:'MTc1OTcwNjM0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a0e08bb384b7b0',t:'MTc1OTcwODgxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
