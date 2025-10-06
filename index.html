@@ -564,6 +564,187 @@
             </div>
         </div>
 
+        <!-- Provider Registration Section -->
+        <div id="provider-registration-section" class="hidden fade-in">
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Join Our Provider Network</h2>
+                    <p class="text-xl text-gray-600 mb-8">Start earning money by offering your services to thousands of customers</p>
+                    
+                    <!-- Benefits -->
+                    <div class="grid md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white rounded-xl shadow-md p-6">
+                            <div class="text-4xl mb-4">💰</div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Earn More</h3>
+                            <p class="text-gray-600">Set your own rates and keep 85% of what you earn</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-md p-6">
+                            <div class="text-4xl mb-4">📱</div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Easy Booking</h3>
+                            <p class="text-gray-600">Get bookings directly through our platform</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-md p-6">
+                            <div class="text-4xl mb-4">🛡️</div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Protected</h3>
+                            <p class="text-gray-600">Verified customers and secure payments</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registration Form -->
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">Provider Registration</h3>
+                    
+                    <form onsubmit="submitProviderRegistration(event)" class="space-y-6">
+                        <!-- Personal Information -->
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                                <input type="text" id="provider-name" required placeholder="Enter your full name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                                <input type="tel" id="provider-phone" required placeholder="e.g., 0881234567" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                <input type="email" id="provider-email" placeholder="your.email@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Location/Area *</label>
+                                <input type="text" id="provider-location" required placeholder="e.g., Monrovia, Paynesville" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- Service Information -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Primary Service *</label>
+                            <select id="provider-service" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select your main service</option>
+                                <option value="electrician">Electrician</option>
+                                <option value="plumber">Plumber</option>
+                                <option value="handyman">Handyman</option>
+                                <option value="cleaner">Cleaning Services</option>
+                                <option value="computer-repair">Computer Repair</option>
+                                <option value="software-dev">Software Development</option>
+                                <option value="graphics-design">Graphics Design</option>
+                                <option value="photography">Photography</option>
+                                <option value="tutor">Tutoring</option>
+                                <option value="freelance-writer">Freelance Writing</option>
+                                <option value="driver">Driver/Transportation</option>
+                                <option value="delivery">Delivery Services</option>
+                                <option value="other">Other (specify below)</option>
+                            </select>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Years of Experience *</label>
+                                <select id="provider-experience" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select experience</option>
+                                    <option value="1-2">1-2 years</option>
+                                    <option value="3-5">3-5 years</option>
+                                    <option value="6-10">6-10 years</option>
+                                    <option value="10+">10+ years</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Hourly Rate (USD) *</label>
+                                <input type="number" id="provider-rate" required min="10" max="500" placeholder="e.g., 75" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Service Description *</label>
+                            <textarea id="provider-description" required rows="4" placeholder="Describe your services, specialties, and what makes you unique..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+
+                        <!-- Availability -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Availability *</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="availability" value="weekdays" class="rounded">
+                                    <span class="text-sm">Weekdays</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="availability" value="weekends" class="rounded">
+                                    <span class="text-sm">Weekends</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="availability" value="evenings" class="rounded">
+                                    <span class="text-sm">Evenings</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="availability" value="emergency" class="rounded">
+                                    <span class="text-sm">Emergency</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Certifications -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Certifications & Licenses</label>
+                            <textarea id="provider-certifications" rows="3" placeholder="List any relevant certifications, licenses, or qualifications..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+
+                        <!-- Agreement -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <label class="flex items-start space-x-3">
+                                <input type="checkbox" id="provider-agreement" required class="mt-1 rounded">
+                                <span class="text-sm text-gray-700">
+                                    I agree to ServiceHub's <strong>Terms of Service</strong> and <strong>Provider Agreement</strong>. 
+                                    I understand that ServiceHub takes a 15% service fee from completed bookings, 
+                                    and I will provide quality service to all customers. *
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="flex space-x-4 pt-6">
+                            <button type="button" onclick="showUserType()" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
+                                ← Back
+                            </button>
+                            <button type="submit" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                                Submit Application
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- FAQ Section -->
+                <div class="mt-12 bg-white rounded-2xl shadow-lg p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h3>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-2">How much can I earn?</h4>
+                            <p class="text-gray-600">You keep 85% of what you charge. Top providers earn $500-2000+ per month depending on their service and availability.</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-2">How do I get paid?</h4>
+                            <p class="text-gray-600">Payments are processed weekly via mobile money (Orange Money, MTN Money) or bank transfer.</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-2">What if a customer doesn't pay?</h4>
+                            <p class="text-gray-600">ServiceHub provides payment protection. We help resolve payment disputes and ensure you get paid for completed work.</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-2">How long does approval take?</h4>
+                            <p class="text-gray-600">Most applications are reviewed within 24-48 hours. We'll contact you via WhatsApp with the next steps.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Success Message -->
         <div id="success-message" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
             <div class="flex items-center space-x-2">
@@ -572,6 +753,74 @@
             </div>
         </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Company Info -->
+                <div class="md:col-span-1">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold">S</span>
+                        </div>
+                        <h3 class="text-xl font-bold">ServiceHub</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">Connecting customers with trusted local service providers across Liberia.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">📘</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">📷</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">🐦</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">💼</a>
+                    </div>
+                </div>
+
+
+
+                <!-- Company -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" onclick="showAbout()" class="hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" onclick="showProviderRegistration()" class="hover:text-white transition-colors">Become a Provider</a></li>
+                        <li><a href="#" onclick="showCareers()" class="hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#" onclick="showPress()" class="hover:text-white transition-colors">Press</a></li>
+                        <li><a href="#" onclick="showBlog()" class="hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" onclick="showInvestors()" class="hover:text-white transition-colors">Investors</a></li>
+                    </ul>
+                </div>
+
+                <!-- Support -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" onclick="showHelp()" class="hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" onclick="showSafety()" class="hover:text-white transition-colors">Safety</a></li>
+                        <li><a href="#" onclick="showTerms()" class="hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="#" onclick="showPrivacy()" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" onclick="showContact()" class="hover:text-white transition-colors">Contact Us</a></li>
+                        <li><a href="#" onclick="showFeedback()" class="hover:text-white transition-colors">Feedback</a></li>
+                    </ul>
+                </div>
+            </div>
+
+
+
+            <!-- Bottom Bar -->
+            <div class="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm mb-4 md:mb-0">
+                    © 2024 ServiceHub. All rights reserved. Made with ❤️ in Liberia.
+                </p>
+                <div class="flex items-center space-x-6 text-sm text-gray-400">
+                    <span>🇱🇷 Proudly Liberian</span>
+                    <span>•</span>
+                    <span>Available 24/7</span>
+                    <span>•</span>
+                    <span>2,500+ Providers</span>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- WhatsApp Modal -->
     <div id="whatsapp-modal" class="whatsapp-modal" style="display: none;">
@@ -691,7 +940,8 @@
         }
 
         function showProviderRegistration() {
-            alert('Provider registration coming soon! Contact us at +231 77 696 6080 to join our network.');
+            hideAllSections();
+            document.getElementById('provider-registration-section').classList.remove('hidden');
         }
 
         function showProviderDashboard() {
@@ -700,12 +950,82 @@
 
         function hideAllSections() {
             const sections = [
-                'user-type-section', 'hero-section', 'categories-section', 'providers-section'
+                'user-type-section', 'hero-section', 'categories-section', 'providers-section', 'provider-registration-section'
             ];
             sections.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) element.classList.add('hidden');
             });
+        }
+
+        function submitProviderRegistration(event) {
+            event.preventDefault();
+            
+            // Get form data
+            const formData = {
+                name: document.getElementById('provider-name').value,
+                phone: document.getElementById('provider-phone').value,
+                email: document.getElementById('provider-email').value,
+                location: document.getElementById('provider-location').value,
+                service: document.getElementById('provider-service').value,
+                experience: document.getElementById('provider-experience').value,
+                rate: document.getElementById('provider-rate').value,
+                description: document.getElementById('provider-description').value,
+                certifications: document.getElementById('provider-certifications').value
+            };
+            
+            // Get availability
+            const availabilityCheckboxes = document.querySelectorAll('input[name="availability"]:checked');
+            const availability = Array.from(availabilityCheckboxes).map(cb => cb.value);
+            
+            if (availability.length === 0) {
+                alert('Please select at least one availability option.');
+                return;
+            }
+            
+            // Create WhatsApp message
+            const message = `🚀 NEW PROVIDER APPLICATION
+
+👤 PERSONAL INFO:
+• Name: ${formData.name}
+• Phone: ${formData.phone}
+• Email: ${formData.email || 'Not provided'}
+• Location: ${formData.location}
+
+💼 SERVICE INFO:
+• Primary Service: ${formData.service}
+• Experience: ${formData.experience}
+• Hourly Rate: $${formData.rate}
+• Availability: ${availability.join(', ')}
+
+📝 DESCRIPTION:
+${formData.description}
+
+🏆 CERTIFICATIONS:
+${formData.certifications || 'None listed'}
+
+---
+Please review this application and contact the provider for next steps.
+
+ServiceHub Team 📱`;
+
+            // Store message for WhatsApp
+            currentWhatsAppMessage = message;
+            currentWhatsAppNumber = "231776966080";
+            
+            // Show WhatsApp modal
+            showWhatsAppModal();
+            
+            // Show success message
+            showNotification('Application submitted successfully! We will contact you within 24-48 hours.', 'success');
+            
+            // Reset form
+            event.target.reset();
+            
+            // Go back to user type selection after a delay
+            setTimeout(() => {
+                showUserType();
+            }, 3000);
         }
 
         function selectService(serviceType) {
@@ -1320,6 +1640,51 @@ ${text}`);
             }
         }
 
+        // Footer functions
+        function showAbout() {
+            alert('🏢 About ServiceHub\n\nServiceHub is Liberia\'s leading platform connecting customers with trusted local service providers. Founded in 2024, we\'re committed to making quality services accessible to everyone.\n\n🎯 Our Mission: Empowering local professionals while providing reliable services to communities across Liberia.');
+        }
+
+        function showCareers() {
+            alert('💼 Careers at ServiceHub\n\nJoin our growing team! We\'re always looking for talented individuals who share our passion for connecting communities.\n\n📧 Send your resume to: careers@servicehub.lr\n📱 Or WhatsApp us at: +231 77 696 6080');
+        }
+
+        function showPress() {
+            alert('📰 Press & Media\n\nFor press inquiries, interviews, or media kits:\n\n📧 Email: press@servicehub.lr\n📱 WhatsApp: +231 77 696 6080\n\nWe\'re happy to share our story and impact in Liberian communities!');
+        }
+
+        function showBlog() {
+            alert('📝 ServiceHub Blog\n\nComing Soon!\n\nOur blog will feature:\n• Home improvement tips\n• Provider success stories\n• Industry insights\n• Community highlights\n\nStay tuned for valuable content!');
+        }
+
+        function showInvestors() {
+            alert('💰 Investor Relations\n\nInterested in investing in ServiceHub?\n\n📧 Contact: investors@servicehub.lr\n📱 WhatsApp: +231 77 696 6080\n\nWe\'re building the future of service delivery in Liberia!');
+        }
+
+        function showHelp() {
+            alert('❓ Help Center\n\n🔧 Common Issues:\n• How to book a service\n• Payment methods\n• Cancellation policy\n• Provider verification\n\n📞 Need help? Call: +231 77 696 6080\n💬 WhatsApp support available 24/7');
+        }
+
+        function showSafety() {
+            alert('🛡️ Safety First\n\nYour safety is our priority:\n\n✅ All providers are background checked\n✅ Verified reviews from real customers\n✅ 24/7 customer support\n✅ Secure payment processing\n✅ Insurance coverage available\n\nReport any concerns: safety@servicehub.lr');
+        }
+
+        function showTerms() {
+            alert('📋 Terms of Service\n\nKey points:\n• Fair pricing and transparent fees\n• Quality service guarantee\n• Dispute resolution process\n• User responsibilities\n\n📄 Full terms available at: servicehub.lr/terms\n📧 Questions? legal@servicehub.lr');
+        }
+
+        function showPrivacy() {
+            alert('🔒 Privacy Policy\n\nWe protect your data:\n• Secure data encryption\n• No sharing without consent\n• GDPR compliant\n• Local data storage\n\n📄 Full policy: servicehub.lr/privacy\n📧 Privacy questions: privacy@servicehub.lr');
+        }
+
+        function showContact() {
+            alert('📞 Contact ServiceHub\n\n🏢 Office Hours: Mon-Fri 8AM-6PM\n📱 WhatsApp: +231 77 696 6080 (24/7)\n📧 Email: hello@servicehub.lr\n🌐 Website: servicehub.lr\n\n📍 Address: Monrovia, Liberia\n\nWe\'re here to help!');
+        }
+
+        function showFeedback() {
+            alert('💭 Share Your Feedback\n\nWe value your input!\n\n⭐ Rate your experience\n💡 Suggest improvements\n🐛 Report bugs\n🎉 Share success stories\n\n📧 feedback@servicehub.lr\n📱 WhatsApp: +231 77 696 6080');
+        }
+
         // Close modals when clicking outside
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('language-dropdown');
@@ -1348,5 +1713,5 @@ ${text}`);
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a1186da03fb7b0',t:'MTc1OTcxMTEwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a1368406f4b7b0',t:'MTc1OTcxMjMzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
