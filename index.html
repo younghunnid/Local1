@@ -149,6 +149,25 @@
             background: #4caf50 !important;
             color: white !important;
         }
+        
+        /* Admin Panel Styles */
+        .admin-tab {
+            transition: all 0.2s ease;
+        }
+        
+        .admin-tab.active {
+            border-color: #dc2626 !important;
+            color: #dc2626 !important;
+        }
+        
+        .admin-provider-card {
+            transition: all 0.2s ease;
+        }
+        
+        .admin-provider-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
@@ -843,6 +862,216 @@
         </div>
     </div>
 
+    <!-- Admin Panel -->
+    <div id="admin-panel" class="hidden fixed inset-0 bg-black bg-opacity-90 z-[9999]">
+        <div class="h-full overflow-y-auto">
+            <div class="max-w-6xl mx-auto p-6">
+                <!-- Admin Header -->
+                <div class="bg-red-600 text-white rounded-t-xl p-4 flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">⚙️</span>
+                        <h2 class="text-2xl font-bold">Admin Panel</h2>
+                        <span class="bg-red-500 px-2 py-1 rounded text-sm">Type: admin123</span>
+                    </div>
+                    <button onclick="closeAdminPanel()" class="text-white hover:text-red-200 text-2xl">✕</button>
+                </div>
+
+                <!-- Admin Content -->
+                <div class="bg-white rounded-b-xl">
+                    <!-- Admin Tabs -->
+                    <div class="border-b border-gray-200">
+                        <nav class="flex space-x-8 px-6">
+                            <button onclick="showAdminTab('providers')" id="admin-tab-providers" class="admin-tab active py-4 px-2 border-b-2 border-red-500 font-medium text-red-600">
+                                👥 Manage Providers
+                            </button>
+                            <button onclick="showAdminTab('services')" id="admin-tab-services" class="admin-tab py-4 px-2 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700">
+                                🛠️ Manage Services
+                            </button>
+                            <button onclick="showAdminTab('bookings')" id="admin-tab-bookings" class="admin-tab py-4 px-2 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700">
+                                📋 View Bookings
+                            </button>
+                            <button onclick="showAdminTab('analytics')" id="admin-tab-analytics" class="admin-tab py-4 px-2 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700">
+                                📊 Analytics
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- Providers Management -->
+                    <div id="admin-providers" class="admin-content p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-gray-900">Manage Providers</h3>
+                            <button onclick="showAddProviderForm()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium">
+                                ➕ Add New Provider
+                            </button>
+                        </div>
+
+                        <!-- Service Filter -->
+                        <div class="mb-4">
+                            <select id="admin-service-filter" onchange="filterAdminProviders()" class="px-4 py-2 border border-gray-300 rounded-lg">
+                                <option value="">All Services</option>
+                                <option value="electrician">Electricians</option>
+                                <option value="plumber">Plumbers</option>
+                                <option value="handyman">Handymen</option>
+                                <option value="cleaner">Cleaners</option>
+                                <option value="computer-repair">Computer Repair</option>
+                                <option value="software-dev">Software Development</option>
+                                <option value="graphics-design">Graphics Design</option>
+                                <option value="photography">Photography</option>
+                                <option value="tutor">Tutoring</option>
+                                <option value="freelance-writer">Freelance Writing</option>
+                                <option value="driver">Drivers</option>
+                                <option value="delivery">Delivery Services</option>
+                            </select>
+                        </div>
+
+                        <!-- Providers List -->
+                        <div id="admin-providers-list" class="space-y-4">
+                            <!-- Providers will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Services Management -->
+                    <div id="admin-services" class="admin-content hidden p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-gray-900">Manage Service Categories</h3>
+                            <button onclick="showAddServiceForm()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium">
+                                ➕ Add New Service
+                            </button>
+                        </div>
+                        <div class="text-gray-600">Service category management coming soon...</div>
+                    </div>
+
+                    <!-- Bookings Management -->
+                    <div id="admin-bookings" class="admin-content hidden p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6">Recent Bookings</h3>
+                        <div class="text-gray-600">Booking management dashboard coming soon...</div>
+                    </div>
+
+                    <!-- Analytics -->
+                    <div id="admin-analytics" class="admin-content hidden p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6">Platform Analytics</h3>
+                        <div class="grid md:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <div class="text-2xl font-bold text-blue-600">2,500+</div>
+                                <div class="text-sm text-gray-600">Total Providers</div>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <div class="text-2xl font-bold text-green-600">15,000+</div>
+                                <div class="text-sm text-gray-600">Total Customers</div>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <div class="text-2xl font-bold text-purple-600">8,750</div>
+                                <div class="text-sm text-gray-600">Completed Bookings</div>
+                            </div>
+                            <div class="bg-orange-50 p-4 rounded-lg">
+                                <div class="text-2xl font-bold text-orange-600">4.8★</div>
+                                <div class="text-sm text-gray-600">Average Rating</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Provider Modal -->
+    <div id="provider-form-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900" id="provider-form-title">Add New Provider</h3>
+                    <button onclick="closeProviderForm()" class="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                </div>
+
+                <form onsubmit="saveProvider(event)" class="space-y-4">
+                    <input type="hidden" id="edit-provider-id">
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                            <input type="text" id="provider-form-name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
+                            <input type="tel" id="provider-form-phone" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Service Type *</label>
+                            <select id="provider-form-service" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select service</option>
+                                <option value="electrician">Electrician</option>
+                                <option value="plumber">Plumber</option>
+                                <option value="handyman">Handyman</option>
+                                <option value="cleaner">Cleaner</option>
+                                <option value="computer-repair">Computer Repair</option>
+                                <option value="software-dev">Software Development</option>
+                                <option value="graphics-design">Graphics Design</option>
+                                <option value="photography">Photography</option>
+                                <option value="tutor">Tutoring</option>
+                                <option value="freelance-writer">Freelance Writing</option>
+                                <option value="driver">Driver</option>
+                                <option value="delivery">Delivery Services</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Experience *</label>
+                            <input type="text" id="provider-form-experience" required placeholder="e.g., 5 years" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Rating *</label>
+                            <input type="number" id="provider-form-rating" required min="1" max="5" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Reviews *</label>
+                            <input type="number" id="provider-form-reviews" required min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Price/Hour *</label>
+                            <input type="number" id="provider-form-price" required min="10" placeholder="75" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Distance *</label>
+                            <input type="number" id="provider-form-distance" required min="0.1" step="0.1" placeholder="1.5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Availability *</label>
+                            <select id="provider-form-availability" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select availability</option>
+                                <option value="now">Available Now</option>
+                                <option value="today">Available Today</option>
+                                <option value="tomorrow">Available Tomorrow</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Specialties (comma separated) *</label>
+                        <input type="text" id="provider-form-specialties" required placeholder="e.g., Wiring, Panel Upgrades, Lighting" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Bio *</label>
+                        <textarea id="provider-form-bio" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <div class="flex space-x-4 pt-4">
+                        <button type="button" onclick="closeProviderForm()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+                        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Save Provider</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global variables
         let selectedProvider = null;
@@ -852,6 +1081,7 @@
         let isOnline = navigator.onLine;
         let currentWhatsAppMessage = '';
         let currentWhatsAppNumber = '';
+        let isAdminMode = false;
 
         // Sample data for service providers
         const serviceProviders = {
@@ -874,6 +1104,38 @@
                 { id: 13, name: "Clean Team Pro", rating: 4.9, reviews: 234, price: "$120/session", priceValue: 120, distance: "1.1 miles", distanceValue: 1.1, experience: "8 years", specialties: ["Deep Cleaning", "Move-in/out", "Office"], availability: "today", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c", phone: "+231-77-012-3456", bio: "Professional cleaning team with 8+ years experience. Specializing in deep cleaning, move-in/out services, and office cleaning. Fully insured and bonded.", certifications: ["Bonded & Insured", "Green Cleaning Certified", "Commercial Cleaning License"], completedJobs: 1200, responseTime: "2 hours", languages: ["English"] },
                 { id: 14, name: "Sparkle Services", rating: 4.7, reviews: 167, price: "$100/session", priceValue: 100, distance: "1.7 miles", distanceValue: 1.7, experience: "6 years", specialties: ["Regular Cleaning", "Eco-friendly"], availability: "now", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610", phone: "+231-77-123-4567", bio: "Eco-friendly cleaning service focused on regular home maintenance. Using only green, non-toxic products safe for families and pets.", certifications: ["Eco-Friendly Certified", "Pet-Safe Cleaning Specialist"], completedJobs: 680, responseTime: "1 hour", languages: ["English", "French"] },
                 { id: 15, name: "Fresh Start Cleaning", rating: 4.8, reviews: 198, price: "$110/session", priceValue: 110, distance: "0.8 miles", distanceValue: 0.8, experience: "10 years", specialties: ["Post-construction", "Carpet Cleaning"], availability: "tomorrow", photoId: "1472099645-e36c4e4a70f6", phone: "+231-77-234-5678", bio: "Specialized cleaning service for post-construction cleanup and carpet cleaning. 10+ years experience with heavy-duty cleaning projects.", certifications: ["Post-Construction Specialist", "Carpet Cleaning Certified", "Heavy Duty Cleaning Expert"], completedJobs: 950, responseTime: "3 hours", languages: ["English", "Spanish"] }
+            ],
+            "computer-repair": [
+                { id: 19, name: "Tech Fix Pro", rating: 4.8, reviews: 156, price: "$60/hour", priceValue: 60, distance: "1.0 miles", distanceValue: 1.0, experience: "7 years", specialties: ["Hardware Repair", "Virus Removal", "Data Recovery"], availability: "now", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c", phone: "+231-77-345-6789", bio: "Expert computer technician with 7+ years experience. Specializing in hardware repairs, virus removal, and data recovery. Fast turnaround times.", certifications: ["CompTIA A+", "Microsoft Certified", "Data Recovery Specialist"], completedJobs: 420, responseTime: "30 minutes", languages: ["English"] },
+                { id: 20, name: "Digital Solutions", rating: 4.6, reviews: 98, price: "$55/hour", priceValue: 55, distance: "1.5 miles", distanceValue: 1.5, experience: "5 years", specialties: ["Software Installation", "Network Setup"], availability: "today", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610", phone: "+231-77-456-7890", bio: "Professional IT support for homes and small businesses. Software installation, network setup, and troubleshooting services.", certifications: ["Network+ Certified", "Software Installation Expert"], completedJobs: 280, responseTime: "45 minutes", languages: ["English", "French"] }
+            ],
+            "software-dev": [
+                { id: 21, name: "Code Masters", rating: 4.9, reviews: 89, price: "$100/hour", priceValue: 100, distance: "2.0 miles", distanceValue: 2.0, experience: "10 years", specialties: ["Web Development", "Mobile Apps", "E-commerce"], availability: "tomorrow", photoId: "1472099645-e36c4e4a70f6", phone: "+231-77-567-8901", bio: "Full-stack development team with 10+ years experience. Creating custom websites, mobile apps, and e-commerce solutions for businesses.", certifications: ["Full Stack Developer", "Mobile App Specialist", "E-commerce Expert"], completedJobs: 150, responseTime: "2 hours", languages: ["English", "Spanish"] },
+                { id: 22, name: "WebCraft Studio", rating: 4.7, reviews: 67, price: "$85/hour", priceValue: 85, distance: "1.8 miles", distanceValue: 1.8, experience: "6 years", specialties: ["WordPress", "Custom Websites"], availability: "now", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65", phone: "+231-77-678-9012", bio: "WordPress specialists creating beautiful, functional websites for small businesses. Custom development and maintenance services.", certifications: ["WordPress Expert", "Web Design Certified"], completedJobs: 200, responseTime: "1 hour", languages: ["English"] }
+            ],
+            "graphics-design": [
+                { id: 23, name: "Creative Vision", rating: 4.8, reviews: 134, price: "$65/hour", priceValue: 65, distance: "1.2 miles", distanceValue: 1.2, experience: "8 years", specialties: ["Logo Design", "Branding", "Print Design"], availability: "today", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c", phone: "+231-77-789-0123", bio: "Professional graphic designer with 8+ years creating stunning logos, branding materials, and print designs for businesses of all sizes.", certifications: ["Adobe Certified Expert", "Brand Design Specialist"], completedJobs: 380, responseTime: "2 hours", languages: ["English", "French"] },
+                { id: 24, name: "Design Hub", rating: 4.6, reviews: 92, price: "$50/hour", priceValue: 50, distance: "0.9 miles", distanceValue: 0.9, experience: "5 years", specialties: ["Social Media Graphics", "Flyers"], availability: "now", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610", phone: "+231-77-890-1234", bio: "Creative design studio specializing in social media graphics, flyers, and marketing materials. Quick turnaround and affordable pricing.", certifications: ["Social Media Design Expert", "Marketing Materials Specialist"], completedJobs: 250, responseTime: "1 hour", languages: ["English"] }
+            ],
+            photography: [
+                { id: 25, name: "Lens Masters", rating: 4.9, reviews: 178, price: "$150/session", priceValue: 150, distance: "1.5 miles", distanceValue: 1.5, experience: "12 years", specialties: ["Weddings", "Portraits", "Events"], availability: "tomorrow", photoId: "1472099645-e36c4e4a70f6", phone: "+231-77-901-2345", bio: "Professional wedding and portrait photographer with 12+ years experience. Capturing life's precious moments with artistic flair and technical excellence.", certifications: ["Professional Photographer", "Wedding Specialist", "Portrait Expert"], completedJobs: 450, responseTime: "3 hours", languages: ["English", "Spanish"] },
+                { id: 26, name: "Snapshot Studio", rating: 4.7, reviews: 123, price: "$120/session", priceValue: 120, distance: "1.0 miles", distanceValue: 1.0, experience: "7 years", specialties: ["Business Photos", "Product Photography"], availability: "today", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65", phone: "+231-77-012-3456", bio: "Commercial photography studio specializing in business headshots and product photography. Professional quality for marketing and business needs.", certifications: ["Commercial Photography Certified", "Product Photography Expert"], completedJobs: 320, responseTime: "2 hours", languages: ["English"] }
+            ],
+            tutor: [
+                { id: 27, name: "Academic Excellence", rating: 4.8, reviews: 145, price: "$40/hour", priceValue: 40, distance: "0.8 miles", distanceValue: 0.8, experience: "9 years", specialties: ["Math", "Science", "English"], availability: "now", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c", phone: "+231-77-123-4567", bio: "Experienced tutor with 9+ years helping students excel in math, science, and English. Personalized learning plans and proven results.", certifications: ["Teaching Certificate", "Subject Matter Expert", "Tutoring Specialist"], completedJobs: 680, responseTime: "1 hour", languages: ["English", "French"] },
+                { id: 28, name: "Study Success", rating: 4.6, reviews: 87, price: "$35/hour", priceValue: 35, distance: "1.3 miles", distanceValue: 1.3, experience: "5 years", specialties: ["Test Prep", "Study Skills"], availability: "today", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610", phone: "+231-77-234-5678", bio: "Specialized in test preparation and study skills development. Helping students improve grades and build confidence in their academic abilities.", certifications: ["Test Prep Specialist", "Study Skills Coach"], completedJobs: 290, responseTime: "2 hours", languages: ["English"] }
+            ],
+            "freelance-writer": [
+                { id: 29, name: "WordCraft Pro", rating: 4.9, reviews: 156, price: "$45/hour", priceValue: 45, distance: "1.7 miles", distanceValue: 1.7, experience: "11 years", specialties: ["Blog Writing", "Copywriting", "Technical Writing"], availability: "tomorrow", photoId: "1472099645-e36c4e4a70f6", phone: "+231-77-345-6789", bio: "Professional freelance writer with 11+ years experience. Specializing in blog content, marketing copy, and technical documentation for businesses.", certifications: ["Content Marketing Certified", "Technical Writing Expert", "SEO Writing Specialist"], completedJobs: 520, responseTime: "4 hours", languages: ["English", "Spanish"] },
+                { id: 30, name: "Content Creator", rating: 4.7, reviews: 98, price: "$35/hour", priceValue: 35, distance: "1.1 miles", distanceValue: 1.1, experience: "6 years", specialties: ["Social Media Content", "Articles"], availability: "now", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65", phone: "+231-77-456-7890", bio: "Creative content writer specializing in social media content and engaging articles. Helping businesses connect with their audience through compelling writing.", certifications: ["Social Media Content Expert", "Article Writing Specialist"], completedJobs: 340, responseTime: "2 hours", languages: ["English", "French"] }
+            ],
+            driver: [
+                { id: 31, name: "Safe Ride Services", rating: 4.8, reviews: 234, price: "$25/hour", priceValue: 25, distance: "0.5 miles", distanceValue: 0.5, experience: "8 years", specialties: ["Airport Transfers", "City Tours", "Personal Driver"], availability: "now", photoId: "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c", phone: "+231-77-567-8901", bio: "Professional driver with 8+ years experience. Safe, reliable transportation for airport transfers, city tours, and personal driving needs.", certifications: ["Commercial Driver License", "Defensive Driving Certified", "First Aid Certified"], completedJobs: 890, responseTime: "15 minutes", languages: ["English", "Kpelle"] },
+                { id: 32, name: "City Transport", rating: 4.6, reviews: 167, price: "$20/hour", priceValue: 20, distance: "1.2 miles", distanceValue: 1.2, experience: "5 years", specialties: ["Local Transport", "Shopping Trips"], availability: "today", photoId: "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610", phone: "+231-77-678-9012", bio: "Reliable local transportation service for shopping trips, appointments, and daily commutes. Clean vehicles and punctual service.", certifications: ["Driver License", "Vehicle Safety Certified"], completedJobs: 450, responseTime: "30 minutes", languages: ["English", "Bassa"] }
+            ],
+            delivery: [
+                { id: 33, name: "Express Delivery", rating: 4.9, reviews: 298, price: "$15/delivery", priceValue: 15, distance: "0.3 miles", distanceValue: 0.3, experience: "6 years", specialties: ["Same-day Delivery", "Food Delivery", "Package Delivery"], availability: "now", photoId: "1472099645-e36c4e4a70f6", phone: "+231-77-789-0123", bio: "Fast and reliable delivery service with 6+ years experience. Same-day delivery for food, packages, and documents across Monrovia.", certifications: ["Delivery Service License", "Food Safety Certified", "Package Handling Expert"], completedJobs: 1200, responseTime: "10 minutes", languages: ["English", "Kpelle", "Bassa"] },
+                { id: 34, name: "Quick Courier", rating: 4.7, reviews: 189, price: "$12/delivery", priceValue: 12, distance: "0.8 miles", distanceValue: 0.8, experience: "4 years", specialties: ["Document Delivery", "Small Packages"], availability: "today", photoId: "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65", phone: "+231-77-890-1234", bio: "Professional courier service specializing in document and small package delivery. Secure handling and timely delivery guaranteed.", certifications: ["Courier License", "Secure Handling Certified"], completedJobs: 680, responseTime: "20 minutes", languages: ["English"] }
             ]
         };
 
@@ -885,6 +1147,7 @@
             initializeApp();
             setupOfflineHandling();
             updateUserPoints();
+            setupAdminKeyboardShortcut();
         });
 
         function initializeApp() {
@@ -1360,57 +1623,107 @@ ServiceHub Team 🚀`;
             showSuccessMessage();
         }
 
-        // Simple WhatsApp Integration - GUARANTEED TO WORK
+        // WhatsApp Integration - Multiple Methods
         function showWhatsAppModal() {
-            // Create a simple alert with all the information
-            const phoneNumber = `+${currentWhatsAppNumber}`;
-            const message = currentWhatsAppMessage;
+            const modal = document.getElementById('whatsapp-modal');
+            const optionsContainer = document.getElementById('whatsapp-options');
             
-            const alertMessage = `📱 WHATSAPP BOOKING DETAILS
-
-📞 PHONE NUMBER: ${phoneNumber}
-
-📝 MESSAGE TO SEND:
-${message}
-
----
-🔥 INSTRUCTIONS:
-1. Copy the phone number: ${phoneNumber}
-2. Open WhatsApp on your phone
-3. Start a new chat with this number
-4. Copy and send the message above
-
-💡 TIP: You can also call or SMS this number directly!`;
-
-            alert(alertMessage);
+            const phoneNumber = currentWhatsAppNumber.replace(/[^0-9]/g, '');
+            const encodedMessage = encodeURIComponent(currentWhatsAppMessage);
             
-            // Try to copy to clipboard as backup
-            const fullText = `${phoneNumber}\n\n${message}`;
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(fullText).catch(() => {});
-            }
+            optionsContainer.innerHTML = `
+                <!-- WhatsApp Web/App -->
+                <a href="https://wa.me/${phoneNumber}?text=${encodedMessage}" 
+                   target="_blank" 
+                   class="whatsapp-option primary"
+                   onclick="closeWhatsAppModal(); showNotification('Opening WhatsApp...', 'success');">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">💬</span>
+                        <div>
+                            <div class="font-bold">Send via WhatsApp</div>
+                            <div class="text-sm opacity-90">Opens WhatsApp with message ready</div>
+                        </div>
+                    </div>
+                </a>
+                
+                <!-- WhatsApp API Link -->
+                <a href="https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}" 
+                   target="_blank" 
+                   class="whatsapp-option"
+                   onclick="closeWhatsAppModal(); showNotification('Opening WhatsApp...', 'success');">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🌐</span>
+                        <div>
+                            <div class="font-bold">WhatsApp Web</div>
+                            <div class="text-sm text-gray-600">Use WhatsApp in browser</div>
+                        </div>
+                    </div>
+                </a>
+                
+                <!-- Copy Message -->
+                <button onclick="copyBookingMessage()" class="whatsapp-option">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">📋</span>
+                        <div>
+                            <div class="font-bold">Copy Message</div>
+                            <div class="text-sm text-gray-600">Copy and paste manually</div>
+                        </div>
+                    </div>
+                </button>
+                
+                <!-- Phone Number -->
+                <div class="whatsapp-option" style="cursor: default; background: #f8f9fa;">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">📞</span>
+                        <div>
+                            <div class="font-bold">Phone: +${phoneNumber}</div>
+                            <div class="text-sm text-gray-600">You can also call or SMS</div>
+                        </div>
+                    </div>
+                </div>
+            `;
             
-            closeWhatsAppModal();
+            modal.style.display = 'flex';
         }
 
         function closeWhatsAppModal() {
             document.getElementById('whatsapp-modal').style.display = 'none';
         }
 
-        function copyMessageAndNumber() {
-            const fullMessage = `📱 CONTACT: +${currentWhatsAppNumber}
+        function copyBookingMessage() {
+            const phoneNumber = currentWhatsAppNumber.replace(/[^0-9]/g, '');
+            const fullMessage = `📱 CONTACT: +${phoneNumber}
 
 📝 MESSAGE TO SEND:
 ${currentWhatsAppMessage}`;
             
-            alert(`📋 COPY THIS INFORMATION:
+            // Try to copy to clipboard
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(currentWhatsAppMessage).then(() => {
+                    showNotification('Message copied to clipboard!', 'success');
+                    closeWhatsAppModal();
+                }).catch(() => {
+                    // Fallback to alert
+                    alert(`📋 COPY THIS MESSAGE:
 
-${fullMessage}
+${currentWhatsAppMessage}
 
 ---
-💡 Open WhatsApp and paste this information to send your booking!`);
-            
-            closeWhatsAppModal();
+📞 Send to: +${phoneNumber}
+💡 Open WhatsApp and paste this message!`);
+                    closeWhatsAppModal();
+                });
+            } else {
+                // Fallback for older browsers
+                alert(`📋 COPY THIS MESSAGE:
+
+${currentWhatsAppMessage}
+
+---
+📞 Send to: +${phoneNumber}
+💡 Open WhatsApp and paste this message!`);
+                closeWhatsAppModal();
+            }
         }
 
         function showPhoneNumber() {
@@ -1704,6 +2017,324 @@ ${text}`);
                 closeProviderProfile();
             }
         });
+
+        // Admin Panel Functions
+        let adminKeySequence = '';
+        let adminKeyTimeout = null;
+        
+        function setupAdminKeyboardShortcut() {
+            document.addEventListener('keydown', function(event) {
+                // Skip if typing in input fields
+                if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                    return;
+                }
+                
+                // Add key to sequence
+                adminKeySequence += event.key.toLowerCase();
+                
+                // Clear timeout if exists
+                if (adminKeyTimeout) {
+                    clearTimeout(adminKeyTimeout);
+                }
+                
+                // Check if sequence matches "admin123"
+                if (adminKeySequence.includes('admin123')) {
+                    event.preventDefault();
+                    openAdminPanel();
+                    adminKeySequence = '';
+                    return;
+                }
+                
+                // Keep only last 10 characters to prevent memory issues
+                if (adminKeySequence.length > 10) {
+                    adminKeySequence = adminKeySequence.slice(-10);
+                }
+                
+                // Reset sequence after 2 seconds of inactivity
+                adminKeyTimeout = setTimeout(() => {
+                    adminKeySequence = '';
+                }, 2000);
+                
+                // Escape to close admin panel
+                if (event.key === 'Escape' && !document.getElementById('admin-panel').classList.contains('hidden')) {
+                    closeAdminPanel();
+                }
+            });
+        }
+
+        function openAdminPanel() {
+            isAdminMode = true;
+            document.getElementById('admin-panel').classList.remove('hidden');
+            loadAdminProviders();
+            showNotification('Admin panel opened! Type "admin123" anywhere to toggle.', 'success');
+        }
+
+        function closeAdminPanel() {
+            isAdminMode = false;
+            document.getElementById('admin-panel').classList.add('hidden');
+        }
+
+        function showAdminTab(tabName) {
+            // Hide all admin content
+            document.querySelectorAll('.admin-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.remove('active', 'border-red-500', 'text-red-600');
+                tab.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Show selected content
+            document.getElementById(`admin-${tabName}`).classList.remove('hidden');
+            
+            // Activate selected tab
+            const activeTab = document.getElementById(`admin-tab-${tabName}`);
+            activeTab.classList.add('active', 'border-red-500', 'text-red-600');
+            activeTab.classList.remove('border-transparent', 'text-gray-500');
+            
+            // Load data for specific tabs
+            if (tabName === 'providers') {
+                loadAdminProviders();
+            }
+        }
+
+        function loadAdminProviders() {
+            const providersList = document.getElementById('admin-providers-list');
+            const allProviders = [];
+            
+            // Collect all providers from all services
+            Object.keys(serviceProviders).forEach(serviceType => {
+                serviceProviders[serviceType].forEach(provider => {
+                    allProviders.push({
+                        ...provider,
+                        serviceType: serviceType
+                    });
+                });
+            });
+            
+            renderAdminProviders(allProviders);
+        }
+
+        function renderAdminProviders(providers) {
+            const providersList = document.getElementById('admin-providers-list');
+            providersList.innerHTML = '';
+            
+            providers.forEach(provider => {
+                const providerCard = document.createElement('div');
+                providerCard.className = 'admin-provider-card bg-white border border-gray-200 rounded-lg p-4';
+                
+                const availabilityIcon = provider.availability === 'now' ? '🟢' : 
+                                       provider.availability === 'today' ? '🟡' : '🔵';
+                
+                providerCard.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold overflow-hidden flex-shrink-0">
+                                <img src="https://images.unsplash.com/photo-${provider.photoId}?w=48&h=48&fit=crop&crop=face" 
+                                     alt="${provider.name}" 
+                                     class="w-full h-full object-cover"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <span class="hidden w-full h-full flex items-center justify-center">${provider.name.charAt(0)}</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">${provider.name}</h4>
+                                <div class="flex items-center space-x-3 text-sm text-gray-600">
+                                    <span class="capitalize">${provider.serviceType}</span>
+                                    <span>•</span>
+                                    <span>${provider.experience}</span>
+                                    <span>•</span>
+                                    <span class="flex items-center">
+                                        <span class="text-yellow-400 mr-1">★</span>
+                                        ${provider.rating} (${provider.reviews})
+                                    </span>
+                                </div>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <span>${availabilityIcon}</span>
+                                    <span class="text-sm text-gray-600">${provider.price}</span>
+                                    <span>•</span>
+                                    <span class="text-sm text-gray-600">${provider.distance}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="editProvider(${provider.id}, '${provider.serviceType}')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm hover:bg-blue-200">
+                                ✏️ Edit
+                            </button>
+                            <button onclick="deleteProvider(${provider.id}, '${provider.serviceType}')" class="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                providersList.appendChild(providerCard);
+            });
+        }
+
+        function filterAdminProviders() {
+            const filterValue = document.getElementById('admin-service-filter').value;
+            const allProviders = [];
+            
+            Object.keys(serviceProviders).forEach(serviceType => {
+                if (!filterValue || serviceType === filterValue) {
+                    serviceProviders[serviceType].forEach(provider => {
+                        allProviders.push({
+                            ...provider,
+                            serviceType: serviceType
+                        });
+                    });
+                }
+            });
+            
+            renderAdminProviders(allProviders);
+        }
+
+        function showAddProviderForm() {
+            document.getElementById('provider-form-title').textContent = 'Add New Provider';
+            document.getElementById('edit-provider-id').value = '';
+            clearProviderForm();
+            document.getElementById('provider-form-modal').classList.remove('hidden');
+        }
+
+        function editProvider(providerId, serviceType) {
+            const provider = serviceProviders[serviceType].find(p => p.id === providerId);
+            if (!provider) return;
+            
+            document.getElementById('provider-form-title').textContent = 'Edit Provider';
+            document.getElementById('edit-provider-id').value = `${providerId}-${serviceType}`;
+            
+            // Fill form with provider data
+            document.getElementById('provider-form-name').value = provider.name;
+            document.getElementById('provider-form-phone').value = provider.phone;
+            document.getElementById('provider-form-service').value = serviceType;
+            document.getElementById('provider-form-experience').value = provider.experience;
+            document.getElementById('provider-form-rating').value = provider.rating;
+            document.getElementById('provider-form-reviews').value = provider.reviews;
+            document.getElementById('provider-form-price').value = provider.priceValue;
+            document.getElementById('provider-form-distance').value = provider.distanceValue;
+            document.getElementById('provider-form-availability').value = provider.availability;
+            document.getElementById('provider-form-specialties').value = provider.specialties.join(', ');
+            document.getElementById('provider-form-bio').value = provider.bio;
+            
+            document.getElementById('provider-form-modal').classList.remove('hidden');
+        }
+
+        function deleteProvider(providerId, serviceType) {
+            if (confirm('Are you sure you want to delete this provider?')) {
+                const providerIndex = serviceProviders[serviceType].findIndex(p => p.id === providerId);
+                if (providerIndex !== -1) {
+                    serviceProviders[serviceType].splice(providerIndex, 1);
+                    loadAdminProviders();
+                    showNotification('Provider deleted successfully!', 'success');
+                }
+            }
+        }
+
+        function saveProvider(event) {
+            event.preventDefault();
+            
+            const editId = document.getElementById('edit-provider-id').value;
+            const isEdit = editId !== '';
+            
+            const formData = {
+                name: document.getElementById('provider-form-name').value,
+                phone: document.getElementById('provider-form-phone').value,
+                serviceType: document.getElementById('provider-form-service').value,
+                experience: document.getElementById('provider-form-experience').value,
+                rating: parseFloat(document.getElementById('provider-form-rating').value),
+                reviews: parseInt(document.getElementById('provider-form-reviews').value),
+                priceValue: parseInt(document.getElementById('provider-form-price').value),
+                distanceValue: parseFloat(document.getElementById('provider-form-distance').value),
+                availability: document.getElementById('provider-form-availability').value,
+                specialties: document.getElementById('provider-form-specialties').value.split(',').map(s => s.trim()),
+                bio: document.getElementById('provider-form-bio').value
+            };
+            
+            // Generate additional fields
+            const newProvider = {
+                ...formData,
+                price: `$${formData.priceValue}/hour`,
+                distance: `${formData.distanceValue} miles`,
+                photoId: generateRandomPhotoId(),
+                certifications: ["Licensed Professional", "Background Checked", "Insured"],
+                completedJobs: Math.floor(Math.random() * 500) + 50,
+                responseTime: ["15 minutes", "30 minutes", "45 minutes", "1 hour"][Math.floor(Math.random() * 4)],
+                languages: ["English"]
+            };
+            
+            if (isEdit) {
+                // Update existing provider
+                const [providerId, serviceType] = editId.split('-');
+                const providerIndex = serviceProviders[serviceType].findIndex(p => p.id === parseInt(providerId));
+                if (providerIndex !== -1) {
+                    serviceProviders[serviceType][providerIndex] = {
+                        ...serviceProviders[serviceType][providerIndex],
+                        ...newProvider
+                    };
+                    showNotification('Provider updated successfully!', 'success');
+                }
+            } else {
+                // Add new provider
+                const newId = Math.max(...Object.values(serviceProviders).flat().map(p => p.id)) + 1;
+                newProvider.id = newId;
+                
+                if (!serviceProviders[formData.serviceType]) {
+                    serviceProviders[formData.serviceType] = [];
+                }
+                serviceProviders[formData.serviceType].push(newProvider);
+                showNotification('Provider added successfully!', 'success');
+            }
+            
+            closeProviderForm();
+            loadAdminProviders();
+        }
+
+        function generateRandomPhotoId() {
+            const photoIds = [
+                "1507003211-a90c1637-c24c-4608-8d2e-71fbb9226f2c",
+                "1494790108-ea87e2ac-c304-4554-aa09-f8c8093e5610",
+                "1472099645-e36c4e4a70f6",
+                "1438761681-c6cb0372-6b8c-4b42-96dc-4fdfba394b65"
+            ];
+            return photoIds[Math.floor(Math.random() * photoIds.length)];
+        }
+
+        function clearProviderForm() {
+            document.getElementById('provider-form-name').value = '';
+            document.getElementById('provider-form-phone').value = '';
+            document.getElementById('provider-form-service').value = '';
+            document.getElementById('provider-form-experience').value = '';
+            document.getElementById('provider-form-rating').value = '';
+            document.getElementById('provider-form-reviews').value = '';
+            document.getElementById('provider-form-price').value = '';
+            document.getElementById('provider-form-distance').value = '';
+            document.getElementById('provider-form-availability').value = '';
+            document.getElementById('provider-form-specialties').value = '';
+            document.getElementById('provider-form-bio').value = '';
+        }
+
+        function closeProviderForm() {
+            document.getElementById('provider-form-modal').classList.add('hidden');
+        }
+
+        function showAddServiceForm() {
+            alert('Service category management coming soon! You can add providers to existing categories for now.');
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('provider-form-modal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeProviderForm();
+            }
+        });
+
+        document.getElementById('admin-panel').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAdminPanel();
+            }
+        });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a143d5a62db7b0',t:'MTc1OTcxMjg3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a157f27090b7b0',t:'MTc1OTcxMzcwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
