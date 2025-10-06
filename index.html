@@ -1438,6 +1438,108 @@
         let userPoints = parseInt(localStorage.getItem('userPoints') || '250');
         let offlineData = JSON.parse(localStorage.getItem('offlineData') || '{}');
 
+        // Universal WhatsApp function with multiple fallback methods
+        function openWhatsApp(phoneNumber, message) {
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Multiple URL formats for maximum compatibility
+            const urls = [
+                `https://wa.me/${phoneNumber}?text=${encodedMessage}`,
+                `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`,
+                `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`,
+                `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`
+            ];
+            
+            let success = false;
+            let attempts = 0;
+            
+            function tryNextMethod() {
+                if (attempts >= urls.length) {
+                    // All methods failed, show manual instructions
+                    showManualWhatsAppInstructions(phoneNumber, message);
+                    return;
+                }
+                
+                const url = urls[attempts];
+                attempts++;
+                
+                try {
+                    // Method 1: Try window.open
+                    const popup = window.open(url, '_blank', 'noopener,noreferrer');
+                    
+                    if (popup && !popup.closed && typeof popup.closed !== 'undefined') {
+                        // Window opened successfully
+                        setTimeout(() => {
+                            if (popup.closed) {
+                                // Popup was closed, likely opened WhatsApp
+                                showNotification('✅ WhatsApp opened successfully!', 'success');
+                                success = true;
+                            } else {
+                                // Popup still open, try closing and next method
+                                popup.close();
+                                setTimeout(tryNextMethod, 500);
+                            }
+                        }, 2000);
+                    } else {
+                        // Popup blocked or failed, try direct navigation
+                        setTimeout(() => {
+                            try {
+                                window.location.href = url;
+                                showNotification('📱 Redirecting to WhatsApp...', 'info');
+                                success = true;
+                            } catch (error) {
+                                console.log(`Method ${attempts} failed:`, error);
+                                setTimeout(tryNextMethod, 500);
+                            }
+                        }, 500);
+                    }
+                } catch (error) {
+                    console.log(`Method ${attempts} failed:`, error);
+                    setTimeout(tryNextMethod, 500);
+                }
+            }
+            
+            // Start trying methods
+            tryNextMethod();
+        }
+        
+        function showManualWhatsAppInstructions(phoneNumber, message) {
+            const instructions = `📱 WhatsApp Instructions
+
+Since automatic opening failed, please manually:
+
+1. Open WhatsApp on your device
+2. Start a new chat with: +${phoneNumber}
+3. Copy and send this message:
+
+${message}
+
+Or tap the button below to copy the message:`;
+            
+            if (confirm(instructions + '\n\nTap OK to copy the message to clipboard')) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(message).then(() => {
+                        alert('✅ Message copied! Now open WhatsApp and paste it to +' + phoneNumber);
+                    }).catch(() => {
+                        alert('❌ Copy failed. Please manually copy the message above.');
+                    });
+                } else {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = message;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        alert('✅ Message copied! Now open WhatsApp and paste it to +' + phoneNumber);
+                    } catch (err) {
+                        alert('❌ Copy failed. Please manually copy the message above.');
+                    }
+                    document.body.removeChild(textArea);
+                }
+            }
+        }
+
         // Sample data for service providers
         const serviceProviders = {
             electrician: [
@@ -1903,18 +2005,14 @@
 
 Please review and contact the applicant for next steps.`;
 
-            // Send to WhatsApp
+            // Send to WhatsApp using the universal function
             const whatsappNumber = "231776966080";
-            const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
             
-            try {
-                const newWindow = window.open(whatsappURL, '_blank', 'noopener,noreferrer');
-                if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-                    window.location.href = whatsappURL;
-                }
-            } catch (error) {
-                window.location.href = whatsappURL;
-            }
+            // Show loading message
+            showNotification('📱 Sending application to WhatsApp...', 'info');
+            
+            // Use the enhanced WhatsApp function
+            openWhatsApp(whatsappNumber, message);
             
             // Show success message
             showNotification('🎉 Application submitted successfully! We will contact you within 24 hours.', 'success');
@@ -2256,26 +2354,71 @@ Please review and contact the applicant for next steps.`;
                         <p class="text-gray-700">${booking.description}</p>
                     </div>
                     
-                    <div class="flex justify-between items-center pt-4 border-t">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-yellow-400">★</span>
-                            <span class="font-medium">${booking.provider.rating}</span>
-                            <span class="text-gray-500 text-sm">(${booking.provider.reviews} reviews)</span>
+                    <div class="flex flex-col space-y-3 pt-4 border-t">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-yellow-400">★</span>
+                                <span class="font-medium">${booking.provider.rating}</span>
+                                <span class="text-gray-500 text-sm">(${booking.provider.reviews} reviews)</span>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                Booking ID: #${booking.id.toString().slice(-6)}
+                            </div>
                         </div>
-                        <div class="flex space-x-3">
+                        
+                        <!-- Action Buttons -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                             ${booking.chatId ? 
-                                `<button onclick="openBookingChatFromHistory('${booking.chatId}', ${JSON.stringify(booking).replace(/"/g, '&quot;')})" class="text-green-600 hover:text-green-800 font-medium">
-                                    💬 Open Chat
-                                </button>` : ''
+                                `<button onclick="openBookingChatFromHistory('${booking.chatId}', ${JSON.stringify(booking).replace(/"/g, '&quot;')})" class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 font-medium text-sm flex items-center justify-center space-x-1">
+                                    <span>💬</span>
+                                    <span>Chat</span>
+                                </button>` : 
+                                `<button onclick="createNewChat('${booking.id}')" class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 font-medium text-sm flex items-center justify-center space-x-1">
+                                    <span>💬</span>
+                                    <span>Start Chat</span>
+                                </button>`
                             }
-                            <button onclick="contactProvider('${booking.provider.name}', '${booking.service}', '${booking.id}')" class="text-blue-600 hover:text-blue-800 font-medium">
-                                Contact Provider
+                            
+                            <button onclick="trackBooking('${booking.id}')" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm flex items-center justify-center space-x-1">
+                                <span>📍</span>
+                                <span>Track</span>
                             </button>
+                            
+                            <button onclick="rescheduleBooking('${booking.id}')" class="bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 font-medium text-sm flex items-center justify-center space-x-1">
+                                <span>📅</span>
+                                <span>Reschedule</span>
+                            </button>
+                            
                             ${booking.status === 'Completed' ? 
-                                `<button onclick="rateService(${booking.id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">
-                                    Rate Service
-                                </button>` : ''
+                                `<button onclick="rateService('${booking.id}')" class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 font-medium text-sm flex items-center justify-center space-x-1">
+                                    <span>⭐</span>
+                                    <span>Rate</span>
+                                </button>` : 
+                                booking.status === 'Pending' ?
+                                `<button onclick="cancelBooking('${booking.id}')" class="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 font-medium text-sm flex items-center justify-center space-x-1">
+                                    <span>❌</span>
+                                    <span>Cancel</span>
+                                </button>` :
+                                `<button onclick="contactProvider('${booking.provider.name}', '${booking.service}', '${booking.id}')" class="bg-gray-600 text-white px-3 py-2 rounded-lg hover:bg-gray-700 font-medium text-sm flex items-center justify-center space-x-1">
+                                    <span>📞</span>
+                                    <span>Contact</span>
+                                </button>`
                             }
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="flex flex-wrap gap-2 text-sm">
+                            <button onclick="shareBooking('${booking.id}')" class="text-blue-600 hover:text-blue-800 font-medium">
+                                📤 Share Booking
+                            </button>
+                            <span class="text-gray-300">•</span>
+                            <button onclick="reportIssue('${booking.id}')" class="text-red-600 hover:text-red-800 font-medium">
+                                🚨 Report Issue
+                            </button>
+                            <span class="text-gray-300">•</span>
+                            <button onclick="addToCalendar('${booking.id}')" class="text-green-600 hover:text-green-800 font-medium">
+                                📅 Add to Calendar
+                            </button>
                         </div>
                     </div>
                 `;
@@ -2310,28 +2453,12 @@ Thank you!`;
 
             // Use the provider's actual contact or the main ServiceHub number
             const whatsappNumber = "231776966080";
-            const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
             
-            // Multiple fallback methods to ensure WhatsApp opens
-            try {
-                // Try opening in new window first
-                const newWindow = window.open(whatsappURL, '_blank', 'noopener,noreferrer');
-                
-                // Check if popup was blocked
-                setTimeout(() => {
-                    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                        // Fallback: direct navigation
-                        window.location.href = whatsappURL;
-                    }
-                }, 100);
-                
-            } catch (error) {
-                // Final fallback
-                window.location.href = whatsappURL;
-            }
+            // Show loading message
+            showNotification('📱 Opening WhatsApp to contact provider...', 'info');
             
-            // Show confirmation message
-            showNotification('📱 Opening WhatsApp to contact provider...', 'success');
+            // Use the enhanced WhatsApp function
+            openWhatsApp(whatsappNumber, message);
         }
 
         function rateService(bookingId) {
@@ -2561,28 +2688,12 @@ Could you please let me know your availability and provide more details about yo
 Thank you!`;
 
             const whatsappNumber = "231776966080";
-            const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
             
-            // Multiple fallback methods to ensure WhatsApp opens
-            try {
-                // Try opening in new window first
-                const newWindow = window.open(whatsappURL, '_blank', 'noopener,noreferrer');
-                
-                // Check if popup was blocked after a short delay
-                setTimeout(() => {
-                    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                        // Fallback: direct navigation
-                        window.location.href = whatsappURL;
-                    }
-                }, 100);
-                
-            } catch (error) {
-                // Final fallback
-                window.location.href = whatsappURL;
-            }
+            // Show loading message
+            showNotification('📱 Opening WhatsApp to contact provider...', 'info');
             
-            // Show confirmation message
-            showNotification('📱 Opening WhatsApp to contact provider...', 'success');
+            // Use the enhanced WhatsApp function
+            openWhatsApp(whatsappNumber, message);
         }
 
         function openBookingModal(providerId) {
@@ -2635,72 +2746,54 @@ Thank you!`;
             const bookingTime = document.getElementById('booking-time').value;
             const workDescription = document.getElementById('work-description').value;
             
-            // Store booking data temporarily
-            window.tempBookingData = {
-                customerPhone,
-                bookingDate,
-                bookingTime,
-                workDescription
-            };
-            
-            // Close booking modal and open payment modal
+            // Close booking modal
             closeBookingModal();
-            openPaymentModal();
+            
+            // Send directly to WhatsApp
+            sendBookingToWhatsApp(customerPhone, bookingDate, bookingTime, workDescription);
         }
 
-        function completeBookingWithPayment() {
-            const bookingData = window.tempBookingData;
-            if (!bookingData) return;
-            
+        function sendBookingToWhatsApp(customerPhone, bookingDate, bookingTime, workDescription) {
             // Format the WhatsApp message
-            const paymentMethodText = selectedPaymentMethod === 'orange' ? 'Orange Money' :
-                                    selectedPaymentMethod === 'lonestar' ? 'LoneStar Cash' :
-                                    selectedPaymentMethod === 'cash' ? 'Cash (Pay after service)' :
-                                    'ServiceHub Wallet';
+            const timeText = bookingTime === 'morning' ? 'Morning (8AM - 12PM)' :
+                           bookingTime === 'afternoon' ? 'Afternoon (12PM - 5PM)' :
+                           'Evening (5PM - 8PM)';
             
-            const message = `🔧 *NEW SERVICE BOOKING REQUEST*
+            const message = `NEW SERVICE BOOKING REQUEST
 
-👤 *Provider:* ${selectedProvider.name}
-🛠️ *Service:* ${currentService.charAt(0).toUpperCase() + currentService.slice(1)}
-💰 *Rate:* ${selectedProvider.price}
-⭐ *Rating:* ${selectedProvider.rating}/5 (${selectedProvider.reviews} reviews)
+Provider: ${selectedProvider.name}
+Service: ${currentService.charAt(0).toUpperCase() + currentService.slice(1)}
+Rate: ${selectedProvider.price}
+Rating: ${selectedProvider.rating}/5 (${selectedProvider.reviews} reviews)
 
-📅 *Preferred Date:* ${bookingData.bookingDate}
-⏰ *Preferred Time:* ${bookingData.bookingTime}
-📱 *Customer Phone:* ${bookingData.customerPhone}
-💳 *Payment Method:* ${paymentMethodText}
+Preferred Date: ${bookingDate}
+Preferred Time: ${timeText}
+Customer Phone: ${customerPhone}
 
-📝 *Work Description:*
-${bookingData.workDescription}
+Work Description:
+${workDescription}
 
 Please confirm this booking and coordinate directly with the customer.`;
 
             // Your WhatsApp number
             const whatsappNumber = "231776966080";
             
-            // Create WhatsApp URL
-            const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            // Show loading message
+            showNotification('📱 Opening WhatsApp...', 'info');
             
-            // Try multiple methods to ensure WhatsApp opens
-            try {
-                const newWindow = window.open(whatsappURL, '_blank', 'noopener,noreferrer');
-                if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-                    window.location.href = whatsappURL;
-                }
-            } catch (error) {
-                window.location.href = whatsappURL;
-            }
+            // Enhanced WhatsApp opening with multiple fallbacks
+            openWhatsApp(whatsappNumber, message);
             
             // Save booking to history with chat ID
             const booking = {
                 id: Date.now(),
                 provider: selectedProvider,
                 service: currentService,
-                customerPhone: bookingData.customerPhone,
-                date: bookingData.bookingDate,
-                time: bookingData.bookingTime,
-                description: bookingData.workDescription,
-                paymentMethod: selectedPaymentMethod,
+                customerPhone: customerPhone,
+                date: bookingDate,
+                time: bookingTime,
+                description: workDescription,
+                paymentMethod: 'To be discussed',
                 status: 'Pending',
                 bookedAt: new Date().toISOString(),
                 chatId: `booking_${Date.now()}` // Unique chat ID for private conversation
@@ -2712,18 +2805,15 @@ Please confirm this booking and coordinate directly with the customer.`;
             // Create private booking chat automatically
             createBookingChat(booking);
             
-            // Clean up temp data
-            delete window.tempBookingData;
-            
             // Show success notification with chat info
-            showNotification('🎉 Booking confirmed! Private chat created with provider and support.', 'success');
+            showNotification('🎉 Booking sent to WhatsApp! Private chat created with provider and support.', 'success');
             
             // Add reward points
             addPoints(25, 'Service booking completed');
             
             // Show booking confirmation with chat option
             setTimeout(() => {
-                const userChoice = confirm('Booking saved! A private chat has been created with your provider and ServiceHub support.\n\nWould you like to open the chat now?');
+                const userChoice = confirm('Booking sent successfully! A private chat has been created with your provider and ServiceHub support.\n\nWould you like to open the chat now?');
                 if (userChoice) {
                     // Open the chat directly
                     openBookingChat(booking.chatId, booking);
@@ -3201,6 +3291,223 @@ Please confirm this booking and coordinate directly with the customer.`;
             openBookingChat(chatId, booking);
         }
 
+        function createNewChat(bookingId) {
+            const booking = bookingHistory.find(b => b.id == bookingId);
+            if (!booking) {
+                alert('Booking not found. Please try again.');
+                return;
+            }
+            
+            // Create new chat ID if it doesn't exist
+            if (!booking.chatId) {
+                booking.chatId = `booking_${Date.now()}`;
+                
+                // Update booking in history
+                const bookingIndex = bookingHistory.findIndex(b => b.id == bookingId);
+                if (bookingIndex !== -1) {
+                    bookingHistory[bookingIndex] = booking;
+                    localStorage.setItem('bookingHistory', JSON.stringify(bookingHistory));
+                }
+                
+                // Create the chat
+                createBookingChat(booking);
+                
+                showNotification('💬 Private chat created! You can now communicate with your provider and ServiceHub support.', 'success');
+            }
+            
+            // Open the chat
+            openBookingChat(booking.chatId, booking);
+        }
+
+        function trackBooking(bookingId) {
+            const booking = bookingHistory.find(b => b.id == bookingId);
+            if (!booking) return;
+            
+            const statusMessages = {
+                'Pending': '⏳ Your booking is pending confirmation from the provider.',
+                'Confirmed': '✅ Your booking is confirmed! The provider will arrive as scheduled.',
+                'In Progress': '🔧 Service is currently in progress.',
+                'Completed': '✨ Service completed successfully!'
+            };
+            
+            const timeText = booking.time === 'morning' ? 'Morning (8AM - 12PM)' :
+                           booking.time === 'afternoon' ? 'Afternoon (12PM - 5PM)' :
+                           'Evening (5PM - 8PM)';
+            
+            alert(`📍 Booking Status Tracker\n\nBooking ID: #${booking.id.toString().slice(-6)}\nProvider: ${booking.provider.name}\nService: ${booking.service}\nScheduled: ${booking.date} • ${timeText}\n\nStatus: ${booking.status}\n${statusMessages[booking.status] || 'Status update available.'}\n\nFor real-time updates, use the chat feature!`);
+        }
+
+        function rescheduleBooking(bookingId) {
+            const booking = bookingHistory.find(b => b.id == bookingId);
+            if (!booking) return;
+            
+            if (booking.status === 'Completed') {
+                alert('❌ Cannot reschedule a completed booking. Please create a new booking instead.');
+                return;
+            }
+            
+            const newDate = prompt(`📅 Reschedule Booking\n\nCurrent date: ${booking.date}\nEnter new date (YYYY-MM-DD):`);
+            
+            if (newDate && newDate !== booking.date) {
+                // Update booking date
+                const bookingIndex = bookingHistory.findIndex(b => b.id == bookingId);
+                if (bookingIndex !== -1) {
+                    bookingHistory[bookingIndex].date = newDate;
+                    bookingHistory[bookingIndex].status = 'Pending'; // Reset to pending
+                    localStorage.setItem('bookingHistory', JSON.stringify(bookingHistory));
+                    
+                    // Send reschedule message to provider
+                    const message = `📅 BOOKING RESCHEDULE REQUEST\n\nBooking ID: #${booking.id.toString().slice(-6)}\nProvider: ${booking.provider.name}\nService: ${booking.service}\n\nOriginal Date: ${booking.date}\nNew Requested Date: ${newDate}\nTime: ${booking.time}\n\nCustomer: ${booking.customerPhone}\n\nPlease confirm the new schedule.`;
+                    
+                    const whatsappNumber = "231776966080";
+                    const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+                    
+                    try {
+                        const newWindow = window.open(whatsappURL, '_blank', 'noopener,noreferrer');
+                        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                            window.location.href = whatsappURL;
+                        }
+                    } catch (error) {
+                        window.location.href = whatsappURL;
+                    }
+                    
+                    showNotification('📅 Reschedule request sent! Provider will confirm the new date.', 'success');
+                    renderBookingHistory(); // Refresh the display
+                }
+            }
+        }
+
+        function cancelBooking(bookingId) {
+            const booking = bookingHistory.find(b => b.id == bookingId);
+            if (!booking) return;
+            
+            if (booking.status === 'Completed') {
+                alert('❌ Cannot cancel a completed booking.');
+                return;
+            }
+            
+            const reason = prompt(`❌ Cancel Booking\n\nBooking ID: #${booking.id.toString().slice(-6)}\nProvider: ${booking.provider.name}\nService: ${booking.service}\nDate: ${booking.date}\n\nPlease provide a reason for cancellation:`);
+            
+            if (reason && reason.trim()) {
+                // Update booking status
+                const bookingIndex = bookingHistory.findIndex(b => b.id == bookingId);
+                if (bookingIndex !== -1) {
+                    bookingHistory[bookingIndex].status = 'Cancelled';
+                    bookingHistory[bookingIndex].cancellationReason = reason.trim();
+                    localStorage.setItem('bookingHistory', JSON.stringify(bookingHistory));
+                    
+                    // Send cancellation message
+                    const message = `❌ BOOKING CANCELLATION\n\nBooking ID: #${booking.id.toString().slice(-6)}\nProvider: ${booking.provider.name}\nService: ${booking.service}\nScheduled: ${booking.date} • ${booking.time}\n\nCancellation Reason: ${reason}\n\nCustomer: ${booking.customerPhone}\n\nThis booking has been cancelled.`;
+                    
+                    const whatsappNumber = "231776966080";
+                    const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+                    
+                    try {
+                        const newWindow = window.open(whatsappURL, '_blank', 'noopener,noreferrer');
+                        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                            window.location.href = whatsappURL;
+                        }
+                    } catch (error) {
+                        window.location.href = whatsappURL;
+                    }
+                    
+                    showNotification('❌ Booking cancelled successfully. Provider has been notified.', 'success');
+                    renderBookingHistory(); // Refresh the display
+                }
+            }
+        }
+
+        function shareBooking(bookingId) {
+            const booking = bookingHistory.find(b => b.id == bookingId);
+            if (!booking) return;
+            
+            const timeText = booking.time === 'morning' ? 'Morning (8AM - 12PM)' :
+                           booking.time === 'afternoon' ? 'Afternoon (12PM - 5PM)' :
+                           'Evening (5PM - 8PM)';
+            
+            const shareText = `📋 ServiceHub Booking Details\n\nBooking ID: #${booking.id.toString().slice(-6)}\nProvider: ${booking.provider.name}\nService: ${booking.service}\nDate: ${booking.date}\nTime: ${timeText}\nStatus: ${booking.status}\n\nBooked via ServiceHub - Find trusted local services!\nDownload: servicehub.lr`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'ServiceHub Booking',
+                    text: shareText
+                });
+            } else {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(shareText);
+                    showNotification('📤 Booking details copied to clipboard!', 'success');
+                } else {
+                    alert(`📤 Share Booking Details:\n\n${shareText}`);
+                }
+            }
+        }
+
+        function reportIssue(bookingId) {
+            const booking = bookingHistory.find(b => b.id == bookingId);
+            if (!booking) return;
+            
+            const issueTypes = [
+                '1. Provider didn\'t show up',
+                '2. Poor quality service',
+                '3. Overcharging/billing issue',
+                '4. Unprofessional behavior',
+                '5. Safety concern',
+                '6. Communication problem',
+                '7. Other issue'
+            ];
+            
+            const issueType = prompt(`🚨 Report Issue\n\nBooking ID: #${booking.id.toString().slice(-6)}\nProvider: ${booking.provider.name}\n\nSelect issue type:\n${issueTypes.join('\n')}\n\nEnter the number (1-7):`);
+            
+            if (issueType && issueType >= '1' && issueType <= '7') {
+                const details = prompt('Please provide more details about the issue:');
+                
+                if (details && details.trim()) {
+                    const reportMessage = `🚨 CUSTOMER ISSUE REPORT\n\nBooking ID: #${booking.id.toString().slice(-6)}\nProvider: ${booking.provider.name}\nService: ${booking.service}\nDate: ${booking.date}\nCustomer: ${booking.customerPhone}\n\nIssue Type: ${issueTypes[parseInt(issueType) - 1]}\n\nDetails: ${details}\n\nPlease investigate and resolve this issue promptly.`;
+                    
+                    const whatsappNumber = "231776966080";
+                    const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(reportMessage)}`;
+                    
+                    try {
+                        const newWindow = window.open(whatsappURL, '_blank', 'noopener,noreferrer');
+                        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                            window.location.href = whatsappURL;
+                        }
+                    } catch (error) {
+                        window.location.href = whatsappURL;
+                    }
+                    
+                    showNotification('🚨 Issue reported successfully. Our support team will investigate.', 'success');
+                }
+            }
+        }
+
+        function addToCalendar(bookingId) {
+            const booking = bookingHistory.find(b => b.id == bookingId);
+            if (!booking) return;
+            
+            const timeText = booking.time === 'morning' ? '08:00' :
+                           booking.time === 'afternoon' ? '12:00' : '17:00';
+            
+            const startDate = new Date(`${booking.date}T${timeText}:00`);
+            const endDate = new Date(startDate.getTime() + (2 * 60 * 60 * 1000)); // 2 hours duration
+            
+            const title = `${booking.service} Service - ${booking.provider.name}`;
+            const details = `ServiceHub Booking\n\nProvider: ${booking.provider.name}\nService: ${booking.service}\nPhone: ${booking.customerPhone}\nBooking ID: #${booking.id.toString().slice(-6)}\n\nDescription: ${booking.description}`;
+            
+            // Create Google Calendar URL
+            const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(details)}`;
+            
+            try {
+                const newWindow = window.open(googleCalendarUrl, '_blank', 'noopener,noreferrer');
+                if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                    window.location.href = googleCalendarUrl;
+                }
+                showNotification('📅 Opening Google Calendar to add your booking...', 'success');
+            } catch (error) {
+                alert('📅 Add to Calendar\n\nEvent: ' + title + '\nDate: ' + booking.date + '\nTime: ' + booking.time + '\n\nCopy this information to your calendar app.');
+            }
+        }
+
         function updateCharCount() {
             const input = document.getElementById('chat-input');
             const charCount = document.getElementById('char-count');
@@ -3236,5 +3543,5 @@ Please confirm this booking and coordinate directly with the customer.`;
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a0e08bb384b7b0',t:'MTc1OTcwODgxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a0fb3c355ab7b0',t:'MTc1OTcwOTkwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
