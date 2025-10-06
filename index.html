@@ -182,9 +182,9 @@
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center space-x-2">
                     <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                        <span class="text-white font-bold text-lg">S</span>
+                        <span class="text-white font-bold text-lg">C</span>
                     </div>
-                    <h1 class="text-2xl font-bold text-gray-900" data-translate="app_name">ServiceHub</h1>
+                    <h1 class="text-2xl font-bold text-gray-900" data-translate="app_name">CYFW Service Marketplace</h1>
                 </div>
                 <nav class="flex items-center space-x-4">
                     <!-- Rewards Badge -->
@@ -252,8 +252,8 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- User Type Selection -->
         <div id="user-type-section" class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-gray-900 mb-4" data-translate="welcome_title">Welcome to ServiceHub</h2>
-            <p class="text-xl text-gray-600 mb-8" data-translate="welcome_subtitle">Choose how you want to use our platform</p>
+            <h2 class="text-4xl font-bold text-gray-900 mb-4" data-translate="welcome_title">Welcome to CYFW Service Marketplace</h2>
+            <p class="text-xl text-gray-600 mb-8" data-translate="welcome_subtitle">Making finding and offering services easy, safe, and reliable</p>
             
             <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                 <!-- Customer Option -->
@@ -292,8 +292,8 @@
 
         <!-- Hero Section (Customer View) -->
         <div id="hero-section" class="hidden text-center mb-12">
-            <h2 class="text-4xl font-bold text-gray-900 mb-4" data-translate="find_services_title">Find Local Services in Minutes</h2>
-            <p class="text-xl text-gray-600 mb-8" data-translate="find_services_subtitle">Connect with trusted professionals in your area</p>
+            <h2 class="text-4xl font-bold text-gray-900 mb-4" data-translate="find_services_title">Find Local & Online Services</h2>
+            <p class="text-xl text-gray-600 mb-8" data-translate="find_services_subtitle">Connect with skilled professionals through trust, skill, and opportunity</p>
             
             <!-- Search Bar -->
             <div class="max-w-2xl mx-auto mb-8">
@@ -321,7 +321,7 @@
                     <span class="text-2xl">🎁</span>
                     <div>
                         <h3 class="font-bold text-lg" data-translate="referral_title">Invite Friends & Earn $5!</h3>
-                        <p class="text-sm opacity-90" data-translate="referral_desc">Share ServiceHub and get rewards for every friend who joins</p>
+                        <p class="text-sm opacity-90" data-translate="referral_desc">Share CYFW Service Marketplace and get rewards for every friend who joins</p>
                     </div>
                     <button onclick="showReferral()" class="bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100" data-translate="invite_now">Invite Now</button>
                 </div>
@@ -331,75 +331,247 @@
         <!-- Service Categories -->
         <div id="categories-section" class="mb-12">
             <h3 class="text-2xl font-bold text-gray-900 mb-6">Popular Services</h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 <!-- Home Services -->
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('electrician')">
-                    <div class="text-4xl mb-3">⚡</div>
-                    <h4 class="font-semibold text-gray-900">Electrician</h4>
-                    <p class="text-sm text-gray-600">Wiring & Repairs</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('electrician')">
+                    <div class="text-3xl mb-2">⚡</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Electrician</h4>
+                    <p class="text-xs text-gray-600">Wiring & Repairs</p>
                 </div>
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('plumber')">
-                    <div class="text-4xl mb-3">🔧</div>
-                    <h4 class="font-semibold text-gray-900">Plumber</h4>
-                    <p class="text-sm text-gray-600">Pipes & Fixtures</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('plumber')">
+                    <div class="text-3xl mb-2">🔧</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Plumber</h4>
+                    <p class="text-xs text-gray-600">Pipes & Fixtures</p>
                 </div>
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('handyman')">
-                    <div class="text-4xl mb-3">🔨</div>
-                    <h4 class="font-semibold text-gray-900">Handyman</h4>
-                    <p class="text-sm text-gray-600">General Repairs</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('handyman')">
+                    <div class="text-3xl mb-2">🔨</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Handyman</h4>
+                    <p class="text-xs text-gray-600">General Repairs</p>
                 </div>
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('cleaner')">
-                    <div class="text-4xl mb-3">🧹</div>
-                    <h4 class="font-semibold text-gray-900">Cleaner</h4>
-                    <p class="text-sm text-gray-600">Home & Office</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('cleaner')">
+                    <div class="text-3xl mb-2">🧹</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Cleaner</h4>
+                    <p class="text-xs text-gray-600">Home & Office</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('painter')">
+                    <div class="text-3xl mb-2">🎨</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Painter</h4>
+                    <p class="text-xs text-gray-600">Interior & Exterior</p>
+                </div>
+                
+                <!-- Construction & Repair -->
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('carpenter')">
+                    <div class="text-3xl mb-2">🪚</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Carpenter</h4>
+                    <p class="text-xs text-gray-600">Wood & Furniture</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('mason')">
+                    <div class="text-3xl mb-2">🧱</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Mason</h4>
+                    <p class="text-xs text-gray-600">Bricks & Concrete</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('roofer')">
+                    <div class="text-3xl mb-2">🏠</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Roofer</h4>
+                    <p class="text-xs text-gray-600">Roof Repair</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('welder')">
+                    <div class="text-3xl mb-2">🔥</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Welder</h4>
+                    <p class="text-xs text-gray-600">Metal Work</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('hvac')">
+                    <div class="text-3xl mb-2">❄️</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">HVAC Tech</h4>
+                    <p class="text-xs text-gray-600">AC & Heating</p>
                 </div>
                 
                 <!-- Tech Services -->
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('computer-repair')">
-                    <div class="text-4xl mb-3">💻</div>
-                    <h4 class="font-semibold text-gray-900">Computer Repair</h4>
-                    <p class="text-sm text-gray-600">Hardware & Software</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('computer-repair')">
+                    <div class="text-3xl mb-2">💻</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Computer Repair</h4>
+                    <p class="text-xs text-gray-600">Hardware & Software</p>
                 </div>
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('software-dev')">
-                    <div class="text-4xl mb-3">👨‍💻</div>
-                    <h4 class="font-semibold text-gray-900">Software Dev</h4>
-                    <p class="text-sm text-gray-600">Apps & Websites</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('software-dev')">
+                    <div class="text-3xl mb-2">👨‍💻</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Software Dev</h4>
+                    <p class="text-xs text-gray-600">Apps & Websites</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('phone-repair')">
+                    <div class="text-3xl mb-2">📱</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Phone Repair</h4>
+                    <p class="text-xs text-gray-600">Mobile Devices</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('tv-repair')">
+                    <div class="text-3xl mb-2">📺</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">TV Repair</h4>
+                    <p class="text-xs text-gray-600">Electronics</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('network-setup')">
+                    <div class="text-3xl mb-2">🌐</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Network Setup</h4>
+                    <p class="text-xs text-gray-600">WiFi & Internet</p>
                 </div>
                 
                 <!-- Creative Services -->
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('graphics-design')">
-                    <div class="text-4xl mb-3">🎨</div>
-                    <h4 class="font-semibold text-gray-900">Graphics Design</h4>
-                    <p class="text-sm text-gray-600">Logos & Branding</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('graphics-design')">
+                    <div class="text-3xl mb-2">🎨</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Graphics Design</h4>
+                    <p class="text-xs text-gray-600">Logos & Branding</p>
                 </div>
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('photography')">
-                    <div class="text-4xl mb-3">📸</div>
-                    <h4 class="font-semibold text-gray-900">Photography</h4>
-                    <p class="text-sm text-gray-600">Events & Portraits</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('photography')">
+                    <div class="text-3xl mb-2">📸</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Photography</h4>
+                    <p class="text-xs text-gray-600">Events & Portraits</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('videography')">
+                    <div class="text-3xl mb-2">🎥</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Videography</h4>
+                    <p class="text-xs text-gray-600">Video Production</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('music-production')">
+                    <div class="text-3xl mb-2">🎵</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Music Producer</h4>
+                    <p class="text-xs text-gray-600">Audio & Beats</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('dj')">
+                    <div class="text-3xl mb-2">🎧</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">DJ Services</h4>
+                    <p class="text-xs text-gray-600">Events & Parties</p>
                 </div>
                 
                 <!-- Professional Services -->
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('tutor')">
-                    <div class="text-4xl mb-3">📚</div>
-                    <h4 class="font-semibold text-gray-900">Tutor</h4>
-                    <p class="text-sm text-gray-600">Academic Help</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('tutor')">
+                    <div class="text-3xl mb-2">📚</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Tutor</h4>
+                    <p class="text-xs text-gray-600">Academic Help</p>
                 </div>
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('freelance-writer')">
-                    <div class="text-4xl mb-3">✍️</div>
-                    <h4 class="font-semibold text-gray-900">Freelance Writer</h4>
-                    <p class="text-sm text-gray-600">Content & Articles</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('freelance-writer')">
+                    <div class="text-3xl mb-2">✍️</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Freelance Writer</h4>
+                    <p class="text-xs text-gray-600">Content & Articles</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('translator')">
+                    <div class="text-3xl mb-2">🌍</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Translator</h4>
+                    <p class="text-xs text-gray-600">Language Services</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('accountant')">
+                    <div class="text-3xl mb-2">💰</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Accountant</h4>
+                    <p class="text-xs text-gray-600">Tax & Bookkeeping</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('lawyer')">
+                    <div class="text-3xl mb-2">⚖️</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Legal Advisor</h4>
+                    <p class="text-xs text-gray-600">Legal Consultation</p>
                 </div>
                 
                 <!-- Transport & Delivery -->
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('driver')">
-                    <div class="text-4xl mb-3">🚗</div>
-                    <h4 class="font-semibold text-gray-900">Driver</h4>
-                    <p class="text-sm text-gray-600">Transportation</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('driver')">
+                    <div class="text-3xl mb-2">🚗</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Driver</h4>
+                    <p class="text-xs text-gray-600">Transportation</p>
                 </div>
-                <div class="service-card bg-white p-6 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('delivery')">
-                    <div class="text-4xl mb-3">📦</div>
-                    <h4 class="font-semibold text-gray-900">Delivery</h4>
-                    <p class="text-sm text-gray-600">Package & Food</p>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('delivery')">
+                    <div class="text-3xl mb-2">📦</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Delivery</h4>
+                    <p class="text-xs text-gray-600">Package & Food</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('moving')">
+                    <div class="text-3xl mb-2">📦</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Moving Service</h4>
+                    <p class="text-xs text-gray-600">Relocation Help</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('mechanic')">
+                    <div class="text-3xl mb-2">🔧</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Auto Mechanic</h4>
+                    <p class="text-xs text-gray-600">Car Repair</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('motorcycle-repair')">
+                    <div class="text-3xl mb-2">🏍️</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Motorcycle Repair</h4>
+                    <p class="text-xs text-gray-600">Bike Maintenance</p>
+                </div>
+                
+                <!-- Personal Care -->
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('barber')">
+                    <div class="text-3xl mb-2">✂️</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Barber</h4>
+                    <p class="text-xs text-gray-600">Hair Cutting</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('hairstylist')">
+                    <div class="text-3xl mb-2">💇‍♀️</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Hair Stylist</h4>
+                    <p class="text-xs text-gray-600">Hair & Beauty</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('makeup-artist')">
+                    <div class="text-3xl mb-2">💄</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Makeup Artist</h4>
+                    <p class="text-xs text-gray-600">Beauty & Events</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('massage-therapist')">
+                    <div class="text-3xl mb-2">💆</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Massage Therapist</h4>
+                    <p class="text-xs text-gray-600">Wellness & Relaxation</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('fitness-trainer')">
+                    <div class="text-3xl mb-2">💪</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Fitness Trainer</h4>
+                    <p class="text-xs text-gray-600">Personal Training</p>
+                </div>
+                
+                <!-- Food & Catering -->
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('chef')">
+                    <div class="text-3xl mb-2">👨‍🍳</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Personal Chef</h4>
+                    <p class="text-xs text-gray-600">Cooking Services</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('catering')">
+                    <div class="text-3xl mb-2">🍽️</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Catering</h4>
+                    <p class="text-xs text-gray-600">Event Food</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('baker')">
+                    <div class="text-3xl mb-2">🧁</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Baker</h4>
+                    <p class="text-xs text-gray-600">Cakes & Pastries</p>
+                </div>
+                
+                <!-- Security & Safety -->
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('security-guard')">
+                    <div class="text-3xl mb-2">🛡️</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Security Guard</h4>
+                    <p class="text-xs text-gray-600">Property Protection</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('locksmith')">
+                    <div class="text-3xl mb-2">🔐</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Locksmith</h4>
+                    <p class="text-xs text-gray-600">Lock & Key Services</p>
+                </div>
+                
+                <!-- Gardening & Outdoor -->
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('gardener')">
+                    <div class="text-3xl mb-2">🌱</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Gardener</h4>
+                    <p class="text-xs text-gray-600">Landscaping</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('pest-control')">
+                    <div class="text-3xl mb-2">🐛</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Pest Control</h4>
+                    <p class="text-xs text-gray-600">Extermination</p>
+                </div>
+                
+                <!-- Event Services -->
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('event-planner')">
+                    <div class="text-3xl mb-2">🎉</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Event Planner</h4>
+                    <p class="text-xs text-gray-600">Party Organization</p>
+                </div>
+                <div class="service-card bg-white p-4 rounded-xl shadow-md cursor-pointer text-center" onclick="selectService('decorator')">
+                    <div class="text-3xl mb-2">🎈</div>
+                    <h4 class="font-semibold text-gray-900 text-sm">Decorator</h4>
+                    <p class="text-xs text-gray-600">Event Decoration</p>
                 </div>
             </div>
         </div>
@@ -588,25 +760,25 @@
             <div class="max-w-4xl mx-auto">
                 <!-- Header -->
                 <div class="text-center mb-12">
-                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Join Our Provider Network</h2>
-                    <p class="text-xl text-gray-600 mb-8">Start earning money by offering your services to thousands of customers</p>
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Join CYFW Provider Network</h2>
+                    <p class="text-xl text-gray-600 mb-8">Grow through trust, skill, and opportunity - Start earning by offering your services</p>
                     
                     <!-- Benefits -->
                     <div class="grid md:grid-cols-3 gap-6 mb-8">
                         <div class="bg-white rounded-xl shadow-md p-6">
                             <div class="text-4xl mb-4">💰</div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-2">Earn More</h3>
-                            <p class="text-gray-600">Set your own rates and keep 85% of what you earn</p>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Fair Earnings</h3>
+                            <p class="text-gray-600">Set your own rates with transparent fees and secure payments</p>
                         </div>
                         <div class="bg-white rounded-xl shadow-md p-6">
-                            <div class="text-4xl mb-4">📱</div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-2">Easy Booking</h3>
-                            <p class="text-gray-600">Get bookings directly through our platform</p>
+                            <div class="text-4xl mb-4">🤝</div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Trust & Safety</h3>
+                            <p class="text-gray-600">Verified users, honest reviews, and professional standards</p>
                         </div>
                         <div class="bg-white rounded-xl shadow-md p-6">
-                            <div class="text-4xl mb-4">🛡️</div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-2">Protected</h3>
-                            <p class="text-gray-600">Verified customers and secure payments</p>
+                            <div class="text-4xl mb-4">🌍</div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Global Reach</h3>
+                            <p class="text-gray-600">Based in Liberia, operating globally for local and online services</p>
                         </div>
                     </div>
                 </div>
@@ -716,9 +888,9 @@
                             <label class="flex items-start space-x-3">
                                 <input type="checkbox" id="provider-agreement" required class="mt-1 rounded">
                                 <span class="text-sm text-gray-700">
-                                    I agree to ServiceHub's <strong>Terms of Service</strong> and <strong>Provider Agreement</strong>. 
-                                    I understand that ServiceHub takes a 15% service fee from completed bookings, 
-                                    and I will provide quality service to all customers. *
+                                    I agree to CYFW's <strong>Terms of Service</strong> and <strong>Community Guidelines</strong>. 
+                                    I understand the platform fees and commission structure, 
+                                    and I will maintain honesty and professionalism in all transactions. *
                                 </span>
                             </label>
                         </div>
@@ -741,23 +913,23 @@
                     
                     <div class="space-y-6">
                         <div>
-                            <h4 class="font-semibold text-gray-900 mb-2">How much can I earn?</h4>
-                            <p class="text-gray-600">You keep 85% of what you charge. Top providers earn $500-2000+ per month depending on their service and availability.</p>
+                            <h4 class="font-semibold text-gray-900 mb-2">Who can join CYFW?</h4>
+                            <p class="text-gray-600">You must be 18+ years old, provide accurate information, and maintain honesty and professionalism in all transactions.</p>
                         </div>
                         
                         <div>
-                            <h4 class="font-semibold text-gray-900 mb-2">How do I get paid?</h4>
-                            <p class="text-gray-600">Payments are processed weekly via mobile money (Orange Money, MTN Money) or bank transfer.</p>
+                            <h4 class="font-semibold text-gray-900 mb-2">How do payments work?</h4>
+                            <p class="text-gray-600">Payments can be handled through CYFW platform or directly by agreement. CYFW may charge service fees per transaction.</p>
                         </div>
                         
                         <div>
-                            <h4 class="font-semibold text-gray-900 mb-2">What if a customer doesn't pay?</h4>
-                            <p class="text-gray-600">ServiceHub provides payment protection. We help resolve payment disputes and ensure you get paid for completed work.</p>
+                            <h4 class="font-semibold text-gray-900 mb-2">What about disputes?</h4>
+                            <p class="text-gray-600">CYFW provides support to help resolve issues fairly. We encourage respectful communication between all parties.</p>
                         </div>
                         
                         <div>
                             <h4 class="font-semibold text-gray-900 mb-2">How long does approval take?</h4>
-                            <p class="text-gray-600">Most applications are reviewed within 24-48 hours. We'll contact you via WhatsApp with the next steps.</p>
+                            <p class="text-gray-600">Applications are reviewed within 24-48 hours. We verify identity for security and maintain platform safety.</p>
                         </div>
                     </div>
                 </div>
@@ -781,11 +953,11 @@
                 <div class="md:col-span-1">
                     <div class="flex items-center space-x-2 mb-4">
                         <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                            <span class="text-white font-bold">S</span>
+                            <span class="text-white font-bold">C</span>
                         </div>
-                        <h3 class="text-xl font-bold">ServiceHub</h3>
+                        <h3 class="text-xl font-bold">CYFW Service Marketplace</h3>
                     </div>
-                    <p class="text-gray-400 mb-4">Connecting customers with trusted local service providers across Liberia.</p>
+                    <p class="text-gray-400 mb-4">Choose Your Friend Wisely - Making finding and offering services easy, safe, and reliable. Based in Liberia, operating globally.</p>
                     <div class="flex space-x-4">
                         <a href="#" class="text-gray-400 hover:text-white transition-colors">📘</a>
                         <a href="#" class="text-gray-400 hover:text-white transition-colors">📷</a>
@@ -828,14 +1000,14 @@
             <!-- Bottom Bar -->
             <div class="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center">
                 <p class="text-gray-400 text-sm mb-4 md:mb-0">
-                    © 2024 ServiceHub. All rights reserved. Made with ❤️ in Liberia.
+                    © 2024 Choose Your Friend Wisely (CYFW). All rights reserved. Made with ❤️ in Liberia.
                 </p>
                 <div class="flex items-center space-x-6 text-sm text-gray-400">
-                    <span>🇱🇷 Proudly Liberian</span>
+                    <span>🇱🇷 Based in Liberia</span>
                     <span>•</span>
-                    <span>Available 24/7</span>
+                    <span>Operating Globally</span>
                     <span>•</span>
-                    <span>2,500+ Providers</span>
+                    <span>Trust • Skill • Opportunity</span>
                 </div>
             </div>
         </div>
@@ -1331,7 +1503,7 @@
             }
             
             // Create WhatsApp message
-            const message = `🚀 NEW PROVIDER APPLICATION
+            const message = `🚀 NEW PROVIDER APPLICATION - CYFW
 
 👤 PERSONAL INFO:
 • Name: ${formData.name}
@@ -1354,7 +1526,7 @@ ${formData.certifications || 'None listed'}
 ---
 Please review this application and contact the provider for next steps.
 
-ServiceHub Team 📱`;
+Choose Your Friend Wisely (CYFW) Team 🌍`;
 
             // Store message for WhatsApp
             currentWhatsAppMessage = message;
@@ -1678,7 +1850,7 @@ ServiceHub Team 📱`;
                            bookingTime === 'afternoon' ? 'Afternoon (12PM - 5PM)' :
                            'Evening (5PM - 8PM)';
             
-            const message = `🔥 NEW SERVICE BOOKING REQUEST
+            const message = `🔥 NEW SERVICE BOOKING REQUEST - CYFW
 
 📋 BOOKING DETAILS:
 • Provider: ${selectedProvider.name}
@@ -1699,7 +1871,7 @@ ${workDescription}
 ---
 Please confirm this booking and coordinate directly with the customer.
 
-ServiceHub Team 🚀`;
+Choose Your Friend Wisely (CYFW) Team 🌍`;
 
             // Store message and number for WhatsApp modal
             currentWhatsAppMessage = message;
@@ -1901,7 +2073,7 @@ ${text}`);
 
         function showReferral() {
             const referralCode = 'SH' + Math.random().toString(36).substr(2, 6).toUpperCase();
-            const message = `🎁 Join ServiceHub with my code: ${referralCode}\n\nGet $5 credit when you sign up!\n\nDownload: servicehub.lr`;
+            const message = `🎁 Join CYFW Service Marketplace with my code: ${referralCode}\n\nGet $5 credit when you sign up!\n\nChoose Your Friend Wisely - Trust • Skill • Opportunity\n\nEmail: chooseyourfriendwisely@gmail.com`;
             
             if (navigator.share) {
                 navigator.share({
@@ -2039,47 +2211,47 @@ ${text}`);
 
         // Footer functions
         function showAbout() {
-            alert('🏢 About ServiceHub\n\nServiceHub is Liberia\'s leading platform connecting customers with trusted local service providers. Founded in 2024, we\'re committed to making quality services accessible to everyone.\n\n🎯 Our Mission: Empowering local professionals while providing reliable services to communities across Liberia.');
+            alert('🏢 About CYFW Service Marketplace\n\nChoose Your Friend Wisely (CYFW) connects users with skilled professionals for local and online services. Our mission is to make finding and offering services easy, safe, and reliable.\n\n🎯 Our Values: Trust • Skill • Opportunity\n🌍 Based in Liberia, operating globally');
         }
 
         function showCareers() {
-            alert('💼 Careers at ServiceHub\n\nJoin our growing team! We\'re always looking for talented individuals who share our passion for connecting communities.\n\n📧 Send your resume to: careers@servicehub.lr\n📱 Or WhatsApp us at: +231 77 696 6080');
+            alert('💼 Careers at CYFW\n\nJoin our growing team! We\'re looking for individuals who share our values of trust, skill, and opportunity.\n\n📧 Send your resume to: chooseyourfriendwisely@gmail.com\n🌍 Remote opportunities available globally');
         }
 
         function showPress() {
-            alert('📰 Press & Media\n\nFor press inquiries, interviews, or media kits:\n\n📧 Email: press@servicehub.lr\n📱 WhatsApp: +231 77 696 6080\n\nWe\'re happy to share our story and impact in Liberian communities!');
+            alert('📰 Press & Media\n\nFor press inquiries, interviews, or media information:\n\n📧 Email: chooseyourfriendwisely@gmail.com\n🌍 Based in Liberia, operating globally\n\nWe\'re happy to share our story and mission!');
         }
 
         function showBlog() {
-            alert('📝 ServiceHub Blog\n\nComing Soon!\n\nOur blog will feature:\n• Home improvement tips\n• Provider success stories\n• Industry insights\n• Community highlights\n\nStay tuned for valuable content!');
+            alert('📝 CYFW Blog\n\nComing Soon!\n\nOur blog will feature:\n• Service tips and guides\n• Provider success stories\n• Trust and safety insights\n• Community highlights\n\nStay tuned for valuable content!');
         }
 
         function showInvestors() {
-            alert('💰 Investor Relations\n\nInterested in investing in ServiceHub?\n\n📧 Contact: investors@servicehub.lr\n📱 WhatsApp: +231 77 696 6080\n\nWe\'re building the future of service delivery in Liberia!');
+            alert('💰 Investor Relations\n\nInterested in supporting CYFW\'s mission?\n\n📧 Contact: chooseyourfriendwisely@gmail.com\n🌍 Building trust-based service connections globally\n\nWe\'re growing through trust, skill, and opportunity!');
         }
 
         function showHelp() {
-            alert('❓ Help Center\n\n🔧 Common Issues:\n• How to book a service\n• Payment methods\n• Cancellation policy\n• Provider verification\n\n📞 Need help? Call: +231 77 696 6080\n💬 WhatsApp support available 24/7');
+            alert('❓ Help Center\n\n🔧 Common Topics:\n• Account registration (18+ required)\n• Service listings and policies\n• Payment methods and fees\n• Ratings and reviews\n• Dispute resolution\n\n📧 Support: chooseyourfriendwisely@gmail.com');
         }
 
         function showSafety() {
-            alert('🛡️ Safety First\n\nYour safety is our priority:\n\n✅ All providers are background checked\n✅ Verified reviews from real customers\n✅ 24/7 customer support\n✅ Secure payment processing\n✅ Insurance coverage available\n\nReport any concerns: safety@servicehub.lr');
+            alert('🛡️ Safety & Conduct\n\nYour safety is our priority:\n\n✅ Users must be respectful and non-discriminatory\n✅ No fraud, spam, or fake profiles\n✅ Honest reviews and feedback only\n✅ Identity verification for security\n✅ Report suspicious activity immediately\n\n📧 Report concerns: chooseyourfriendwisely@gmail.com');
         }
 
         function showTerms() {
-            alert('📋 Terms of Service\n\nKey points:\n• Fair pricing and transparent fees\n• Quality service guarantee\n• Dispute resolution process\n• User responsibilities\n\n📄 Full terms available at: servicehub.lr/terms\n📧 Questions? legal@servicehub.lr');
+            alert('📋 Terms of Service\n\nKey policies:\n• Users must be 18+ years old\n• Accurate information required\n• Legal services only\n• Fair pricing and transparent fees\n• Honest reviews and professional conduct\n• Dispute resolution support available\n\n📧 Questions: chooseyourfriendwisely@gmail.com');
         }
 
         function showPrivacy() {
-            alert('🔒 Privacy Policy\n\nWe protect your data:\n• Secure data encryption\n• No sharing without consent\n• GDPR compliant\n• Local data storage\n\n📄 Full policy: servicehub.lr/privacy\n📧 Privacy questions: privacy@servicehub.lr');
+            alert('🔒 Privacy Policy\n\nWe protect your data:\n• Global data protection standards\n• Information used only for verification, service improvement, and support\n• Never sold or shared with unauthorized parties\n• Secure data handling\n\n📧 Privacy questions: chooseyourfriendwisely@gmail.com');
         }
 
         function showContact() {
-            alert('📞 Contact ServiceHub\n\n🏢 Office Hours: Mon-Fri 8AM-6PM\n📱 WhatsApp: +231 77 696 6080 (24/7)\n📧 Email: hello@servicehub.lr\n🌐 Website: servicehub.lr\n\n📍 Address: Monrovia, Liberia\n\nWe\'re here to help!');
+            alert('📞 Contact CYFW\n\nChoose Your Friend Wisely (CYFW)\n📧 Email: chooseyourfriendwisely@gmail.com\n🌍 Based in Liberia – operating globally\n\n🎯 Mission: Making finding and offering services easy, safe, and reliable\n💡 Values: Trust • Skill • Opportunity');
         }
 
         function showFeedback() {
-            alert('💭 Share Your Feedback\n\nWe value your input!\n\n⭐ Rate your experience\n💡 Suggest improvements\n🐛 Report bugs\n🎉 Share success stories\n\n📧 feedback@servicehub.lr\n📱 WhatsApp: +231 77 696 6080');
+            alert('💭 Share Your Feedback\n\nWe value your input!\n\n⭐ Rate your experience\n💡 Suggest improvements\n🐛 Report issues\n🎉 Share success stories\n\n📧 feedback: chooseyourfriendwisely@gmail.com\n🌍 Help us improve globally!');
         }
 
         // Close modals when clicking outside
@@ -2428,5 +2600,5 @@ ${text}`);
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a16b8c7270b7b0',t:'MTc1OTcxNDUwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a4c0a8e00db7b0',t:'MTc1OTc0OTQ0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
